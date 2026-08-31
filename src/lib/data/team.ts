@@ -1,9 +1,4 @@
-export type TeamPart = "기획" | "디자인" | "FE" | "BE";
-
-export type TeamMember = {
-  name: string;
-  part: TeamPart;
-};
+import type { TeamMember } from "@/types/team";
 
 // TODO: Supabase 연동 전까지 사용하는 목업 데이터
 export const teamMembers: TeamMember[] = [

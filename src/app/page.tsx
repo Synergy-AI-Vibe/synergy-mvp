@@ -1,5 +1,5 @@
-import { getTeamMembers } from "@/server/services/team-service";
-import type { TeamPart } from "@/server/data/team";
+import { getTeamMembers } from "@/lib/services/team-service";
+import type { TeamPart } from "@/types/team";
 
 const PARTS: TeamPart[] = ["기획", "디자인", "FE", "BE"];
 
