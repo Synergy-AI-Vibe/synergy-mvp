@@ -4,7 +4,9 @@ npx tsc --noEmit || exit 1
 echo "[pre-push] next build 확인 중..."
 npm run build || exit 1
 
-if [ -d ".vercel" ]; then
+if [ -f ".vercel/project.json" ]; then
+  echo "[pre-push] vercel 프로젝트 설정 동기화 중..."
+  npx vercel pull --yes || exit 1
   echo "[pre-push] vercel build 확인 중..."
   npx vercel build || exit 1
 else
