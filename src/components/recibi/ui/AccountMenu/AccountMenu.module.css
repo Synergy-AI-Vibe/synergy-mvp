@@ -1,0 +1,48 @@
+.wrap {
+  position: relative;
+}
+
+.trigger {
+  min-height: var(--tap);
+  padding: 0 2px;
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.menu {
+  position: absolute;
+  top: 26px;
+  right: 0;
+  z-index: 10;
+  width: 148px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+
+.item {
+  display: flex;
+  align-items: center;
+  width: 100%;
+  min-height: var(--tap);
+  padding: 0 14px;
+  font-size: 13.5px;
+  color: var(--text);
+  text-align: left;
+}
+
+.item:hover {
+  background: var(--canvas);
+}
+
+.item:active {
+  background: var(--line);
+}
+
+.item:focus-visible {
+  outline-offset: -2px;
+}
+
+.danger {
+  color: var(--accent);
+}

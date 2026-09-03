@@ -1,0 +1,51 @@
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  padding: 15px 26px; /* 시안 13px → 44px 클릭영역 확보를 위해 15px (11_디자인시스템 3-4항) */
+  background: var(--text);
+  color: var(--text-on-ink);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1;
+  white-space: nowrap;
+  min-height: var(--tap);
+}
+
+.btn:hover:not(:disabled) {
+  background: var(--ink-hover);
+}
+
+.btn:active:not(:disabled) {
+  background: var(--ink-press);
+}
+
+.btn:disabled {
+  background: var(--canvas);
+  color: var(--text-3);
+}
+
+.accent {
+  background: var(--accent);
+}
+
+.accent:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.accent:active:not(:disabled) {
+  background: var(--accent-press);
+}
+
+.accent:focus-visible {
+  outline-color: var(--text);
+}
+
+.sm {
+  font-size: 13.5px;
+}
+
+.full {
+  width: 100%;
+}

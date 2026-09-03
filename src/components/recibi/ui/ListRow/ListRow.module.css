@@ -1,0 +1,93 @@
+.row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--line);
+}
+
+.open {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  flex-wrap: wrap;
+  padding: 16px 0;
+  text-align: left;
+}
+
+.open:hover {
+  background: var(--canvas);
+}
+
+.open:active {
+  background: var(--line);
+}
+
+.open:focus-visible {
+  outline-offset: -2px;
+}
+
+.open:disabled {
+  cursor: default;
+}
+
+.open:disabled:hover {
+  background: none;
+}
+
+.open:disabled .title {
+  color: var(--text-3);
+}
+
+.open:disabled .meta {
+  color: var(--text-3);
+}
+
+.main {
+  flex: 1;
+  min-width: 170px;
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+.title {
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.meta {
+  font-size: 12.5px;
+  color: var(--text-2);
+}
+
+.trailing {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+}
+
+.delete {
+  flex: none;
+  width: 30px;
+  height: 30px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  color: var(--text-2);
+  font-size: 15px;
+}
+
+.delete::before {
+  content: "";
+  position: absolute;
+  inset: -7px; /* 보이는 크기 30px 유지 + 클릭 영역만 44px (11_디자인시스템 3-4항) */
+}
+
+.delete:hover {
+  color: var(--accent);
+}
