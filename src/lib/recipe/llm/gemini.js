@@ -6,8 +6,52 @@ import '../env.js'; // .env 의 GEMINI_API_KEY 를 process.env 로 올린다
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
+/**
+ * 여러 사람의 무료 티어 키를 돌려 쓰기 위한 풀.
+ *
+ * GEMINI_API_KEYS 에 쉼표(또는 줄바꿈)로 여러 개를 넣으면 그걸 쓰고,
+ * 없으면 기존처럼 GEMINI_API_KEY(단일)로 폴백한다 — 기존 .env 는 그대로 동작한다.
+ */
+export function apiKeys() {
+  const multi = process.env.GEMINI_API_KEYS;
+  const raw = multi ? multi.split(/[,\n]/) : [process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY];
+  return [...new Set(raw.map((k) => (k || '').trim()).filter(Boolean))];
+}
+
 export function apiKey() {
-  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || null;
+  return apiKeys()[0] || null;
+}
+
+/**
+ * 키별 쿨다운 상태. 무료 티어 일일 할당량(429 "quota")에 걸린 키는
+ * 다음 날까지 건드리지 않고 다른 키로 넘어간다.
+ * 프로세스 메모리에만 있으므로 서버 재시작하면 초기화된다 — 그 정도면 충분하다.
+ */
+const cooldownUntil = new Map(); // key -> epoch ms
+let rrIndex = 0;
+
+function isQuotaExceeded(e) {
+  return e?.status === 429 && /quota/i.test(e.message || '');
+}
+
+/** 키 자체가 잘못됐을 때(오타·자리표시자를 안 지웠을 때 등) — 이 키만 건너뛴다. */
+function isKeyInvalid(e) {
+  return (e?.status === 400 || e?.status === 403) && /api[_ ]?key/i.test(e.message || '');
+}
+
+function markCooldown(key, ms = 24 * 60 * 60 * 1000) {
+  cooldownUntil.set(key, Date.now() + ms);
+}
+
+/** 라운드로빈으로 다음 키를 고른다. 쿨다운 중인 키는 건너뛴다(전부 쿨다운이면 그래도 하나는 준다). */
+function nextKey(pool) {
+  if (!pool.length) return null;
+  const now = Date.now();
+  const ready = pool.filter((k) => !(cooldownUntil.get(k) > now));
+  const from = ready.length ? ready : pool;
+  const key = from[rrIndex % from.length];
+  rrIndex++;
+  return key;
 }
 
 export async function listModels() {
@@ -100,26 +144,44 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * 503(과부하)·429(레이트리밋)는 무료 티어에서 흔한 일시 오류라 지수 백오프로 재시도한다.
+ *
+ * 429 중에서도 "quota exceeded"(일일 할당량 소진)는 같은 키로 아무리 기다려도
+ * 안 풀리므로 백오프 대신 즉시 다음 키로 넘어간다 — GEMINI_API_KEYS 풀이 있을 때만
+ * 의미가 있고, 키가 하나뿐이면 예전처럼 그 키로만 재시도한다.
  * 그래도 안 되면 호출부가 다음 모델로 폴백할 수 있도록 에러를 그대로 올린다.
  */
 export async function generateJsonWithRetry(opts, { attempts = 4, baseDelay = 2000 } = {}) {
+  const pool = apiKeys();
+  const keyRounds = Math.max(pool.length, 1);
   let last;
-  for (let i = 0; i < attempts; i++) {
-    try {
-      return await generateJson(opts);
-    } catch (e) {
-      last = e;
-      const transient = e.status === 503 || e.status === 429 || e.status >= 500;
-      if (!transient || i === attempts - 1) throw e;
-      await sleep(baseDelay * 2 ** i);
+  for (let k = 0; k < keyRounds; k++) {
+    const key = nextKey(pool);
+    for (let i = 0; i < attempts; i++) {
+      try {
+        return await generateJson({ ...opts, key });
+      } catch (e) {
+        last = e;
+        if (isQuotaExceeded(e)) {
+          if (key) markCooldown(key);
+          break; // 이 키는 오늘 더 써봐야 소용없다 — 다음 키로
+        }
+        if (isKeyInvalid(e)) {
+          if (key) markCooldown(key, 365 * 24 * 60 * 60 * 1000); // 사실상 영구 — 프로세스 재시작 전까지 건너뜀
+          break; // 다음 키로
+        }
+        const transient = e.status === 503 || e.status === 429 || e.status >= 500;
+        if (!transient) throw e;
+        if (i === attempts - 1) break; // 이 키에서의 재시도는 소진 — 다음 키로 넘어가 본다
+        await sleep(baseDelay * 2 ** i);
+      }
     }
   }
   throw last;
 }
 
-export async function generateJson({ model, system, user, schema, timeout = 90000 }) {
-  const key = apiKey();
-  if (!key) throw new Error('GEMINI_API_KEY 환경변수가 없습니다.');
+export async function generateJson({ model, system, user, schema, timeout = 90000, key }) {
+  const useKey = key || apiKey();
+  if (!useKey) throw new Error('GEMINI_API_KEY 환경변수가 없습니다.');
 
   const body = {
     contents: [{ role: 'user', parts: [{ text: user }] }],
@@ -134,7 +196,7 @@ export async function generateJson({ model, system, user, schema, timeout = 9000
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), timeout);
   try {
-    const res = await fetch(`${BASE}/models/${model}:generateContent?key=${key}`, {
+    const res = await fetch(`${BASE}/models/${model}:generateContent?key=${useKey}`, {
       method: 'POST',
       signal: ac.signal,
       headers: { 'content-type': 'application/json' },
