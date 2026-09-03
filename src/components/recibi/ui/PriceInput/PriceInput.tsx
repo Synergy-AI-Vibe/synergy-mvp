@@ -1,5 +1,3 @@
-import styles from "./PriceInput.module.css";
-
 /** 부품 12 — 금액 입력칸. 가격 데이터 없는 재료에 직접 입력 (02_동작규칙 4-2). 빈 값과 0은 같게 다룬다 */
 interface PriceInputProps {
   id: string;
@@ -10,13 +8,13 @@ interface PriceInputProps {
 
 export function PriceInput({ id, value, onChange, label }: PriceInputProps) {
   return (
-    <div className={styles.wrap}>
-      <label className="visually-hidden" htmlFor={id}>
+    <div className="inline-flex items-center gap-1.5 border border-accent px-2.5 py-1.5 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus">
+      <label className="sr-only" htmlFor={id}>
         {label}
       </label>
       <input
         id={id}
-        className={styles.input}
+        className="w-15 border-none bg-transparent p-0 text-right text-[13.5px] font-bold text-text outline-none placeholder:font-normal placeholder:text-text-3"
         type="number"
         min={0}
         step={100}
@@ -28,7 +26,7 @@ export function PriceInput({ id, value, onChange, label }: PriceInputProps) {
           onChange(Number.isFinite(next) && next > 0 ? next : 0);
         }}
       />
-      <span className={styles.unit}>원</span>
+      <span className="text-xs font-medium text-text-2">원</span>
     </div>
   );
 }

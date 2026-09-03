@@ -1,6 +1,7 @@
-import styles from "./UrlInput.module.css";
+import type { ReactNode } from "react";
 
-/** 부품 10 — URL 입력창. YOUTUBE 라벨은 값이 있고, 오류가 아니고, 형식을 통과할 때만 보인다 (02_동작규칙 2-2) */
+/** 부품 10 — URL 입력창. YOUTUBE 라벨은 값이 있고, 오류가 아니고, 형식을 통과할 때만 보인다 (02_동작규칙 2-2).
+ * action은 테두리 안 오른쪽에 붙는 실행 버튼 — 입력과 계산이 한 덩어리로 보여야 한다. */
 interface UrlInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -9,7 +10,13 @@ interface UrlInputProps {
   showYoutubeTag?: boolean;
   disabled?: boolean;
   placeholder?: string;
+  action?: ReactNode;
+  /** 넘기면 값이 있을 때 테두리 안에 지우기(×) 버튼이 생긴다 */
+  onClear?: () => void;
 }
+
+const WRAP =
+  "flex flex-wrap items-stretch gap-2 border py-1.5 pr-1.5 pl-4 focus-within:outline-2 focus-within:outline-offset-2 focus-within:outline-focus";
 
 export function UrlInput({
   value,
@@ -19,16 +26,30 @@ export function UrlInput({
   showYoutubeTag,
   disabled,
   placeholder,
+  action,
+  onClear,
 }: UrlInputProps) {
+  const wrapClass = [
+    WRAP,
+    error ? "border-accent" : disabled ? "border-line" : "border-line-strong",
+    disabled && "bg-canvas",
+  ]
+    .filter(Boolean)
+    .join(" ");
+
   return (
-    <div className={[styles.wrap, error && styles.err, disabled && styles.disabled].filter(Boolean).join(" ")}>
-      {showYoutubeTag && <span className={styles.tag}>YOUTUBE</span>}
-      <label className="visually-hidden" htmlFor="recipe-url-input">
+    <div className={wrapClass}>
+      {showYoutubeTag && (
+        <span className="self-center text-[11px] font-medium tracking-[0.06em] whitespace-nowrap text-text-2">
+          YOUTUBE
+        </span>
+      )}
+      <label className="sr-only" htmlFor="recipe-url-input">
         유튜브 영상 링크
       </label>
       <input
         id="recipe-url-input"
-        className={styles.input}
+        className="min-h-8 min-w-30 flex-1 self-center border-none bg-transparent py-3 text-[14.5px] text-text outline-none placeholder:text-text-3"
         type="text"
         inputMode="url"
         autoComplete="off"
@@ -44,6 +65,17 @@ export function UrlInput({
         }}
         aria-invalid={error || undefined}
       />
+      {onClear && value.length > 0 && (
+        <button
+          type="button"
+          className="flex flex-none items-center self-center px-2 text-[15px] text-text-2 hover:text-accent"
+          onClick={onClear}
+          aria-label="입력한 링크 지우기"
+        >
+          ×
+        </button>
+      )}
+      {action && <span className="flex flex-none items-stretch">{action}</span>}
     </div>
   );
 }

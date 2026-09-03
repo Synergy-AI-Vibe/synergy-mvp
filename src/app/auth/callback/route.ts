@@ -27,6 +27,9 @@ export async function GET(request: Request): Promise<Response> {
     console.error('[auth/callback]', error.message)
   }
 
-  // 알림창을 쓰지 않습니다 (4.4) — 로그인 화면에서 문구로 표시합니다
-  return NextResponse.redirect(`${origin}/login?error=auth_failed`)
+  // 알림창을 쓰지 않습니다 (4.4). 로그인은 모달이라 돌아갈 화면이 곧 원래 보던 화면이므로,
+  // next 로 되돌려 보내고 ?toast=login_failed 로 실패를 알립니다.
+  const failed = new URL(next, origin)
+  failed.searchParams.set('toast', 'login_failed')
+  return NextResponse.redirect(failed)
 }

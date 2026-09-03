@@ -31,4 +31,17 @@ export interface ChosenPantryIngredient {
 export type ToastMessage =
   | "카카오 계정으로 로그인했습니다."
   | "로그아웃되었습니다."
-  | "탈퇴가 완료되었습니다.";
+  | "탈퇴가 완료되었습니다."
+  | "카카오 인증에 실패했습니다. 다시 시도해 주세요.";
+
+/** h1 링크로 계산 ↔ h2 레시피 직접 입력 (02_동작규칙 2-1) */
+export type RecipeInputMode = "url" | "text";
+
+/**
+ * 홈에서 넣은 검색 입력. 결과 화면 상단에도 같은 자리에 그대로 남아야 해서 화면 밖에 둔다.
+ * 입력 모드는 여기가 아니라 주소의 ?mode= 로 다룬다 — 링크를 걸거나 새로고침해도 유지되어야 한다.
+ */
+export interface RecipeSearchState {
+  url: string;
+  text: string;
+}

@@ -5,10 +5,15 @@
 // 쪽에서 별도로 동기화할 필요가 없다. 북마크는 /api/bookmarks를 그대로 부르는 얇은 캐시일 뿐이다.
 
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from "react";
-import type { ToastMessage } from "@/types/recibi";
+import type { RecipeSearchState, ToastMessage } from "@/types/recibi";
 
 export const RECIBI_BOOKMARK_LIMIT = 5;
 const TOAST_DURATION_MS = 2600;
+const EMPTY_SEARCH: RecipeSearchState = { url: "", text: "" };
+
+// a1 로그인 · a3 회원탈퇴는 화면 이동 없이 모달로 뜬다. 어느 화면에서든 열 수 있어야 해서
+// 열림 상태를 Context에 두고, 실제 모달은 layout에 한 번만 렌더링한다.
+export type ModalState = { kind: "login"; fromResult: boolean } | { kind: "withdraw" } | null;
 
 export interface RecibiUser {
   id: string;
@@ -44,6 +49,13 @@ interface RecibiAppContextValue {
   removeBookmark: (id: number) => Promise<boolean>;
   toast: ToastMessage | null;
   showToast: (message: ToastMessage) => void;
+  /** 홈에서 넣은 검색 입력. 결과 화면 상단 검색부가 같은 값을 이어서 보여준다 (모드는 ?mode=) */
+  search: RecipeSearchState;
+  setSearch: (patch: Partial<RecipeSearchState>) => void;
+  modal: ModalState;
+  openLoginModal: (options?: { fromResult?: boolean }) => void;
+  openWithdrawModal: () => void;
+  closeModal: () => void;
 }
 
 const RecibiAppContext = createContext<RecibiAppContextValue | null>(null);
@@ -58,6 +70,20 @@ export function RecibiAppProvider({
   const [bookmarks, setBookmarks] = useState<BookmarkItem[] | null>(null);
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [search, setSearchState] = useState<RecipeSearchState>(EMPTY_SEARCH);
+  const [modal, setModal] = useState<ModalState>(null);
+
+  const setSearch = useCallback((patch: Partial<RecipeSearchState>) => {
+    setSearchState((prev) => ({ ...prev, ...patch }));
+  }, []);
+
+  const openLoginModal = useCallback((options?: { fromResult?: boolean }) => {
+    setModal({ kind: "login", fromResult: options?.fromResult ?? false });
+  }, []);
+
+  const openWithdrawModal = useCallback(() => setModal({ kind: "withdraw" }), []);
+
+  const closeModal = useCallback(() => setModal(null), []);
 
   useEffect(() => {
     if (!initialUser) return; // 초기값이 이미 null이다 — 로그인·로그아웃은 풀 리다이렉트라 다시 마운트된다
@@ -114,8 +140,27 @@ export function RecibiAppProvider({
       removeBookmark,
       toast,
       showToast,
+      search,
+      setSearch,
+      modal,
+      openLoginModal,
+      openWithdrawModal,
+      closeModal,
     }),
-    [initialUser, bookmarks, addBookmark, removeBookmark, toast, showToast]
+    [
+      initialUser,
+      bookmarks,
+      addBookmark,
+      removeBookmark,
+      toast,
+      showToast,
+      search,
+      setSearch,
+      modal,
+      openLoginModal,
+      openWithdrawModal,
+      closeModal,
+    ]
   );
 
   return <RecibiAppContext.Provider value={value}>{children}</RecibiAppContext.Provider>;
