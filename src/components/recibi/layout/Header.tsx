@@ -6,12 +6,21 @@ import { useRecibiApp } from "@/context/RecibiAppContext";
 import { AccountMenu } from "@/components/recibi/ui/AccountMenu/AccountMenu";
 import styles from "./Header.module.css";
 
-/** 부품 22 — 헤더. 비로그인이면 북마크 항목과 구분자를 함께 숨긴다 (02_동작규칙 6항 헤더 표시 규칙) */
+/** 부품 22 — 헤더. 비로그인이면 북마크 항목과 구분자를 함께 숨긴다 (6항 헤더 표시 규칙) */
 export function Header() {
   const pathname = usePathname();
   const router = useRouter();
-  const { isLoggedIn, user, logout } = useRecibiApp();
+  const { isLoggedIn, user } = useRecibiApp();
   const next = encodeURIComponent(pathname || "/");
+
+  function handleLogout() {
+    // /auth/signout은 POST만 받는다(링크 프리페치로 실수 로그아웃 방지) — 실제 <form> 제출로 부른다.
+    const form = document.createElement("form");
+    form.method = "post";
+    form.action = "/auth/signout";
+    document.body.appendChild(form);
+    form.submit();
+  }
 
   return (
     <header className={styles.header}>
@@ -39,7 +48,7 @@ export function Header() {
           {isLoggedIn && user ? (
             <AccountMenu
               name={user.name}
-              onLogout={logout}
+              onLogout={handleLogout}
               onWithdraw={() => router.push(`/withdraw?next=${next}`)}
             />
           ) : (

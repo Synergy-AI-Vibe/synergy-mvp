@@ -11,12 +11,18 @@ import { NoticeCard } from "@/components/recibi/ui/NoticeCard/NoticeCard";
 import { Skeleton } from "@/components/recibi/ui/Skeleton/Skeleton";
 import { TextLink } from "@/components/recibi/ui/TextLink/TextLink";
 import { isYoutubeUrl } from "@/lib/recibi/validate";
-import { extractRecipeFromText, extractRecipeFromUrl } from "@/lib/services/recibi/recipe-service";
-import type { ExtractionResult } from "@/lib/services/recibi/recipe-service";
+import { setCurrentAnalysis } from "@/lib/current-analysis";
+import type { AnalyzeRequest, AnalyzeResponse } from "@/types/api";
 import styles from "./page.module.css";
 
+interface FailureInfo {
+  eyebrow: string;
+  title: string;
+  description: string;
+}
+
 // h1 홈(링크/직접입력) · h3 형식오류 · c2 계산대기 · h4 추출실패를 한 화면 안의 상태로 다룬다.
-// 02_동작규칙 11항: "실제 경로는 네 개면 충분합니다 — 홈(h1 h2 h3)"이므로 라우팅을 나누지 않는다.
+// 실제 경로는 홈(h1 h2 h3) 하나면 충분하다 — 계산은 /api/analyze 한 번, 결과는 /result로 이동.
 export default function HomePage() {
   const router = useRouter();
   const [mode, setMode] = useState<InputMode>("url");
@@ -24,7 +30,7 @@ export default function HomePage() {
   const [textValue, setTextValue] = useState("");
   const [urlError, setUrlError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasFailed, setHasFailed] = useState(false);
+  const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [recoveryText, setRecoveryText] = useState("");
 
   function handleModeChange(next: InputMode) {
@@ -37,15 +43,54 @@ export default function HomePage() {
     if (urlError) setUrlError(false); // 한 글자라도 고치면 오류 상태 즉시 해제
   }
 
-  async function goToResult(extractor: () => Promise<ExtractionResult>) {
+  async function callAnalyze(body: AnalyzeRequest) {
     setIsSubmitting(true);
-    const result = await extractor();
-    setIsSubmitting(false);
-    if (result.ok && result.recipe) {
-      router.push(`/result/${result.recipe.id}`);
+    let response: AnalyzeResponse;
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      response = (await res.json()) as AnalyzeResponse;
+    } catch {
+      setIsSubmitting(false);
+      setFailure({
+        eyebrow: "연결 실패",
+        title: "서버에 연결하지 못했습니다",
+        description: "네트워크 상태를 확인한 뒤 다시 시도해 주세요.",
+      });
       return;
     }
-    setHasFailed(true);
+    setIsSubmitting(false);
+
+    if (response.status === "success") {
+      setCurrentAnalysis(response.data);
+      const { sourceType, sourceUrl } = response.data.recipe;
+      const query = sourceType === "youtube" && sourceUrl ? `?url=${encodeURIComponent(sourceUrl)}` : "";
+      router.push(`/result${query}`);
+      return;
+    }
+
+    if (response.status === "error" && response.code === "INVALID_URL") {
+      setUrlError(true);
+      return;
+    }
+
+    if (response.status === "no_recipe_found") {
+      setFailure({
+        eyebrow: "추출 실패",
+        title: response.videoTitle ? `"${response.videoTitle}"에서 재료를 찾지 못했습니다` : "재료를 찾지 못했습니다",
+        description: response.message,
+      });
+      return;
+    }
+
+    setFailure({
+      eyebrow: "추출 실패",
+      title: "계산에 실패했습니다",
+      description: response.message,
+    });
   }
 
   async function handleUrlSubmit() {
@@ -54,17 +99,17 @@ export default function HomePage() {
       return;
     }
     setUrlError(false);
-    await goToResult(() => extractRecipeFromUrl(urlValue));
+    await callAnalyze({ url: urlValue });
   }
 
   async function handleTextSubmit() {
-    if (!textValue.trim()) return; // 02_동작규칙 10-1 미정 — 최소 방어만 둔다
-    await goToResult(() => extractRecipeFromText(textValue));
+    if (!textValue.trim()) return; // 빈 입력 검증 규칙은 아직 정해지지 않아 최소 방어만 둔다
+    await callAnalyze({ text: textValue });
   }
 
   async function handleRecoverySubmit() {
     if (!recoveryText.trim()) return;
-    await goToResult(() => extractRecipeFromText(recoveryText));
+    await callAnalyze({ text: recoveryText });
   }
 
   function resetToHome() {
@@ -72,21 +117,15 @@ export default function HomePage() {
     setUrlValue("");
     setTextValue("");
     setUrlError(false);
-    setHasFailed(false);
+    setFailure(null);
     setRecoveryText("");
   }
 
-  if (hasFailed) {
+  if (failure) {
     return (
       <main>
         <section className={`container ${styles.hero}`}>
-          <NoticeCard
-            eyebrow="추출 실패"
-            title="영상에서 재료를 찾지 못했습니다"
-            description={
-              "설명란에 재료 목록이 없거나 형식이 달라 읽지 못했습니다.\n재료를 직접 적으면 바로 계산할 수 있습니다."
-            }
-          >
+          <NoticeCard eyebrow={failure.eyebrow} title={failure.title} description={failure.description}>
             <RecipeTextarea
               placeholder={"재료를 한 줄에 하나씩 적어주세요\n예) 돼지고기 목살 300g"}
               value={recoveryText}

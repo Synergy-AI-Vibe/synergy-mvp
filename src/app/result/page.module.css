@@ -37,6 +37,19 @@
   padding-bottom: clamp(40px, 6vw, 72px);
 }
 
+.loadingSection {
+  padding-top: clamp(38px, 5vw, 56px);
+  padding-bottom: clamp(40px, 6vw, 72px);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.retryError {
+  padding-top: clamp(38px, 5vw, 56px);
+  padding-bottom: clamp(40px, 6vw, 72px);
+}
+
 /* 절약 금액 */
 .saveRow {
   display: flex;
@@ -73,6 +86,15 @@
   line-height: 1.75;
   color: var(--text-2);
   margin-bottom: 30px;
+}
+
+.noStoreNote {
+  border: 1px solid var(--line);
+  padding: 18px 20px;
+  margin-bottom: 22px;
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-2);
 }
 
 .splitRow {
@@ -181,30 +203,12 @@
   color: var(--accent);
 }
 
-.stepBody {
+.stepText {
   flex: 1;
   min-width: 0;
-}
-
-.stepTitle {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  font-size: 14px;
-  font-weight: 700;
-  margin-bottom: 4px;
-}
-
-.stepMinutes {
-  font-size: 12px;
-  font-weight: 400;
-  color: var(--text-2);
-}
-
-.stepText {
   font-size: 14px;
   line-height: 1.75;
-  color: var(--text-2);
+  color: var(--text);
 }
 
 .rawDetails {

@@ -7,14 +7,14 @@ interface ListRowProps {
   title: string;
   meta: string;
   trailing?: ReactNode;
-  onOpen: () => void;
+  onOpen?: () => void;
   onDelete?: () => void;
 }
 
 export function ListRow({ title, meta, trailing, onOpen, onDelete }: ListRowProps) {
   return (
     <li className={styles.row}>
-      <button type="button" className={styles.open} onClick={onOpen}>
+      <button type="button" className={styles.open} onClick={onOpen} disabled={!onOpen}>
         <span className={styles.main}>
           <span className={styles.title}>{title}</span>
           <span className={styles.meta}>{meta}</span>

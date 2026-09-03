@@ -14,5 +14,8 @@ export async function POST(request: Request): Promise<Response> {
   const { data: { user } } = await supabase.auth.getUser()
   if (user) await supabase.auth.signOut()
 
-  return NextResponse.redirect(new URL('/', request.url), { status: 303 })
+  // FE 완료 토스트용 — 리다이렉트라 클라이언트 상태를 못 거친다 (ToastFromQuery가 읽는다)
+  const landing = new URL('/', request.url)
+  landing.searchParams.set('toast', 'logout')
+  return NextResponse.redirect(landing, { status: 303 })
 }

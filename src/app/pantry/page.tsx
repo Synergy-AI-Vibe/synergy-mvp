@@ -4,7 +4,9 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { pantryRecommendedChips } from "@/lib/data/recibi/ingredients";
 import { searchPantryRecipes } from "@/lib/services/recibi/pantry-service";
-import { formatWon } from "@/lib/recibi/calc";
+import { pantryMatchToAnalysisData } from "@/lib/data/recibi/pantry-to-analysis";
+import { setCurrentAnalysis } from "@/lib/current-analysis";
+import { formatWon } from "@/lib/calc";
 import { Chip, ChipAddInput } from "@/components/recibi/ui/Chip/Chip";
 import { Button } from "@/components/recibi/ui/Button/Button";
 import { ButtonGhost } from "@/components/recibi/ui/ButtonGhost/ButtonGhost";
@@ -139,11 +141,14 @@ export default function PantryPage() {
                       {match.missing.length === 0 ? "지금 바로 가능" : `부족 ${match.missing.length}개`}
                     </Tag>
                     <div className={styles.rowDesc}>
-                      {match.missing.length === 0 ? "추가 구매 없음" : `+${formatWon(match.extraCost)}`}
+                      {match.missing.length === 0 ? "추가 구매 없음" : `+${formatWon(match.extraCost)}원`}
                     </div>
                   </span>
                 }
-                onOpen={() => router.push(`/result/${match.recipe.id}`)}
+                onOpen={() => {
+                  setCurrentAnalysis(pantryMatchToAnalysisData(match));
+                  router.push("/result");
+                }}
               />
             ))}
           </ul>

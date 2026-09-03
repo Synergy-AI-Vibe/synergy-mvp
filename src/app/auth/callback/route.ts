@@ -18,7 +18,12 @@ export async function GET(request: Request): Promise<Response> {
   if (code) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
-    if (!error) return NextResponse.redirect(`${origin}${next}`)
+    if (!error) {
+      // FE 완료 토스트용 — 리다이렉트 체인이라 클라이언트 상태를 못 거친다 (ToastFromQuery가 읽는다)
+      const landing = new URL(next, origin)
+      landing.searchParams.set('toast', 'login')
+      return NextResponse.redirect(landing)
+    }
     console.error('[auth/callback]', error.message)
   }
 

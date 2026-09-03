@@ -1,27 +1,31 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import { useRecibiApp } from "@/context/RecibiAppContext";
+import { useSearchParams } from "next/navigation";
+import { createClient } from "@/lib/supabase/client";
 import { KakaoButton } from "@/components/recibi/ui/KakaoButton/KakaoButton";
 import { TextLink } from "@/components/recibi/ui/TextLink/TextLink";
 import styles from "./page.module.css";
 
-// a1 로그인. backView는 ?next= 로 기억한다 (02_동작규칙 11항 "되돌아갈 곳을 기억해야 합니다")
+// a1 로그인. backView는 ?next= 로 기억해 /auth/callback이 인증 후 그리로 돌려보낸다 (6-1)
 function LoginForm() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const { login } = useRecibiApp();
   const [isPending, setIsPending] = useState(false);
 
   const next = searchParams.get("next") || "/";
-  const fromResult = next.startsWith("/result/");
+  const authFailed = searchParams.get("error") === "auth_failed";
+  const fromResult = next.startsWith("/result");
 
   async function handleLogin() {
     if (isPending) return;
     setIsPending(true);
-    await login();
-    router.replace(next);
+    const supabase = createClient();
+    const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(next)}`;
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "kakao",
+      options: { redirectTo },
+    });
+    if (error) setIsPending(false); // 성공하면 브라우저가 카카오로 이동하므로 되돌아올 일이 없다
   }
 
   return (
@@ -33,6 +37,8 @@ function LoginForm() {
             ? "이 레시피를 북마크하려면 로그인이 필요합니다."
             : "계산한 레시피를 북마크에 저장하고 이어서 볼 수 있습니다."}
         </p>
+
+        {authFailed && <p className={styles.error}>카카오 인증에 실패했습니다. 다시 시도해 주세요.</p>}
 
         <KakaoButton onClick={handleLogin} disabled={isPending}>
           {isPending ? "로그인 중" : "카카오로 로그인"}

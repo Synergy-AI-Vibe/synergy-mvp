@@ -28,6 +28,22 @@
   outline-offset: -2px;
 }
 
+.open:disabled {
+  cursor: default;
+}
+
+.open:disabled:hover {
+  background: none;
+}
+
+.open:disabled .title {
+  color: var(--text-3);
+}
+
+.open:disabled .meta {
+  color: var(--text-3);
+}
+
 .main {
   flex: 1;
   min-width: 170px;

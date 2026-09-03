@@ -32,3 +32,10 @@
   color: var(--accent-strong);
   font-weight: 700;
 }
+
+.confirm {
+  background: none;
+  padding: 0;
+  color: var(--accent);
+  font-weight: 500;
+}
