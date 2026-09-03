@@ -4,6 +4,8 @@ import { RecibiAppProvider } from "@/context/RecibiAppContext";
 import { Toast } from "@/components/recibi/ui/Toast/Toast";
 import { Header } from "@/components/recibi/layout/Header";
 import { Footer } from "@/components/recibi/layout/Footer";
+import { LoginModal } from "@/components/recibi/auth/LoginModal";
+import { WithdrawModal } from "@/components/recibi/auth/WithdrawModal";
 import "./globals.css";
 
 const notoSansKr = Noto_Sans_KR({
@@ -25,6 +27,8 @@ export default function RootLayout({ children }: LayoutProps<"/">) {
           <Header />
           {children}
           <Footer />
+          <LoginModal />
+          <WithdrawModal />
           <Toast />
         </RecibiAppProvider>
       </body>

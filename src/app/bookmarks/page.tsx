@@ -14,15 +14,17 @@ import styles from "./page.module.css";
 // b1 목록 · b2 비어있음 · b3 5개 가득 — 전부 이 화면의 상태다 (bookmarks.length로 구분)
 export default function BookmarksPage() {
   const router = useRouter();
-  const { isLoggedIn, bookmarks, removeBookmark } = useRecibiApp();
+  const { isLoggedIn, bookmarks, removeBookmark, openLoginModal } = useRecibiApp();
   const hasMounted = useHasMounted();
   const [live, setLive] = useState<BookmarkWithLivePrice[] | null>(null);
 
   useEffect(() => {
+    // 로그인 전용 화면이라 홈으로 돌려보내고, 로그인 모달을 그 위에 띄운다
     if (hasMounted && !isLoggedIn) {
-      router.replace(`/login?next=${encodeURIComponent("/bookmarks")}`);
+      router.replace("/");
+      openLoginModal();
     }
-  }, [hasMounted, isLoggedIn, router]);
+  }, [hasMounted, isLoggedIn, router, openLoginModal]);
 
   useEffect(() => {
     let cancelled = false;

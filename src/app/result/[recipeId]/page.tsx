@@ -28,7 +28,7 @@ export default function ResultPage() {
   const router = useRouter();
   const recipe = useMemo(() => resolveRecipeForResult(params.recipeId), [params.recipeId]);
 
-  const { isLoggedIn, bookmarks, addBookmark, removeBookmark } = useRecibiApp();
+  const { isLoggedIn, bookmarks, addBookmark, removeBookmark, openLoginModal } = useRecibiApp();
 
   const [activeTab, setActiveTab] = useState<TabKey>("savings"); // 재진입 시 항상 "절약 금액" (02_동작규칙 1-5)
   const [checked, setChecked] = useState<Record<string, boolean>>({});
@@ -56,7 +56,7 @@ export default function ResultPage() {
 
   function handleBookmarkClick() {
     if (!isLoggedIn) {
-      router.push(`/login?next=${encodeURIComponent(`/result/${recipe!.id}`)}`);
+      openLoginModal({ fromResult: true });
       return;
     }
     if (existingBookmark) {

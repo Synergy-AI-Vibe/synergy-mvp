@@ -27,6 +27,10 @@ const BOOKMARK_LIMIT = 5;
 
 type AddBookmarkResult = "saved" | "full" | "unauthenticated";
 
+// a1 로그인 · a3 회원탈퇴는 화면 이동 없이 모달로 뜬다. 어느 화면에서든 열 수 있어야 해서
+// 열림 상태를 Context에 두고, 실제 모달은 layout에 한 번만 렌더링한다.
+export type ModalState = { kind: "login"; fromResult: boolean } | { kind: "withdraw" } | null;
+
 interface RecibiAppContextValue {
   user: User | null;
   isLoggedIn: boolean;
@@ -39,6 +43,10 @@ interface RecibiAppContextValue {
   removeBookmark: (id: string) => void;
   toast: ToastMessage | null;
   showToast: (message: ToastMessage) => void;
+  modal: ModalState;
+  openLoginModal: (options?: { fromResult?: boolean }) => void;
+  openWithdrawModal: () => void;
+  closeModal: () => void;
 }
 
 const RecibiAppContext = createContext<RecibiAppContextValue | null>(null);
@@ -96,6 +104,15 @@ export function RecibiAppProvider({ children }: { children: React.ReactNode }) {
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [modal, setModal] = useState<ModalState>(null);
+
+  const openLoginModal = useCallback((options?: { fromResult?: boolean }) => {
+    setModal({ kind: "login", fromResult: options?.fromResult ?? false });
+  }, []);
+
+  const openWithdrawModal = useCallback(() => setModal({ kind: "withdraw" }), []);
+
+  const closeModal = useCallback(() => setModal(null), []);
 
   const showToast = useCallback((message: ToastMessage) => {
     if (toastTimer.current) clearTimeout(toastTimer.current);
@@ -168,8 +185,27 @@ export function RecibiAppProvider({ children }: { children: React.ReactNode }) {
       removeBookmark,
       toast,
       showToast,
+      modal,
+      openLoginModal,
+      openWithdrawModal,
+      closeModal,
     }),
-    [user, login, logout, withdraw, bookmarks, isBookmarked, addBookmark, removeBookmark, toast, showToast]
+    [
+      user,
+      login,
+      logout,
+      withdraw,
+      bookmarks,
+      isBookmarked,
+      addBookmark,
+      removeBookmark,
+      toast,
+      showToast,
+      modal,
+      openLoginModal,
+      openWithdrawModal,
+      closeModal,
+    ]
   );
 
   return <RecibiAppContext.Provider value={value}>{children}</RecibiAppContext.Provider>;

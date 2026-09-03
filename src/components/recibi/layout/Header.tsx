@@ -1,17 +1,13 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
 import { useRecibiApp } from "@/context/RecibiAppContext";
 import { AccountMenu } from "@/components/recibi/ui/AccountMenu/AccountMenu";
 import styles from "./Header.module.css";
 
 /** 부품 22 — 헤더. 비로그인이면 북마크 항목과 구분자를 함께 숨긴다 (02_동작규칙 6항 헤더 표시 규칙) */
 export function Header() {
-  const pathname = usePathname();
-  const router = useRouter();
-  const { isLoggedIn, user, logout } = useRecibiApp();
-  const next = encodeURIComponent(pathname || "/");
+  const { isLoggedIn, user, logout, openLoginModal, openWithdrawModal } = useRecibiApp();
 
   return (
     <header className={styles.header}>
@@ -37,15 +33,11 @@ export function Header() {
           )}
 
           {isLoggedIn && user ? (
-            <AccountMenu
-              name={user.name}
-              onLogout={logout}
-              onWithdraw={() => router.push(`/withdraw?next=${next}`)}
-            />
+            <AccountMenu name={user.name} onLogout={logout} onWithdraw={openWithdrawModal} />
           ) : (
-            <Link href={`/login?next=${next}`} className={styles.navItem}>
+            <button type="button" className={styles.navItem} onClick={() => openLoginModal()}>
               로그인
-            </Link>
+            </button>
           )}
         </nav>
       </div>
