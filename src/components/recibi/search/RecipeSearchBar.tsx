@@ -174,7 +174,6 @@ export function RecipeSearchBar() {
             onSubmit={handleUrlSubmit}
             error={urlError}
             placeholder={URL_PLACEHOLDER}
-            showYoutubeTag={url.length > 0 && !urlError && isYoutubeUrl(url)}
             onClear={clearUrl}
             action={
               <Button variant="accent" onClick={handleUrlSubmit} disabled={isSubmitting || urlError}>
