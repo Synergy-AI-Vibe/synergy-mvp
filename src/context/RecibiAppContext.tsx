@@ -12,12 +12,19 @@ import {
   createContext,
   useCallback,
   useContext,
+  useEffect,
   useMemo,
   useRef,
   useState,
   useSyncExternalStore,
 } from "react";
-import { loginWithKakao, logout as logoutService, withdrawAccount } from "@/lib/services/recibi/auth-service";
+import {
+  PENDING_LOGIN_KEY,
+  getSessionUser,
+  loginWithKakao,
+  logout as logoutService,
+  withdrawAccount,
+} from "@/lib/services/recibi/auth-service";
 import type { Bookmark, Recipe, ToastMessage, User } from "@/types/recibi";
 
 const USER_STORAGE_KEY = "recibi:user";
@@ -30,7 +37,7 @@ type AddBookmarkResult = "saved" | "full" | "unauthenticated";
 interface RecibiAppContextValue {
   user: User | null;
   isLoggedIn: boolean;
-  login: () => Promise<void>;
+  login: (next?: string) => Promise<void>;
   logout: () => Promise<void>;
   withdraw: () => Promise<void>;
   bookmarks: Bookmark[];
@@ -103,11 +110,37 @@ export function RecibiAppProvider({ children }: { children: React.ReactNode }) {
     toastTimer.current = setTimeout(() => setToast(null), TOAST_DURATION_MS);
   }, []);
 
-  const login = useCallback(async () => {
-    const nextUser = await loginWithKakao();
-    userStore.set(nextUser);
-    showToast("카카오 계정으로 로그인했습니다.");
+  // 앱 진입 시 Supabase 세션 → userStore 동기화.
+  // 카카오에서 돌아온 직후(콜백이 세션 쿠키를 심은 뒤)에도 이 경로로 로그인 상태가 반영된다.
+  useEffect(() => {
+    let cancelled = false;
+    getSessionUser().then((sessionUser) => {
+      if (cancelled) return;
+      const current = userStore.get();
+      if (sessionUser && current?.name !== sessionUser.name) {
+        userStore.set(sessionUser);
+        try {
+          if (window.sessionStorage.getItem(PENDING_LOGIN_KEY)) {
+            window.sessionStorage.removeItem(PENDING_LOGIN_KEY);
+            showToast("카카오 계정으로 로그인했습니다.");
+          }
+        } catch {
+          // 플래그를 못 읽으면 토스트만 생략
+        }
+      } else if (!sessionUser && current) {
+        // 세션이 만료됐는데 localStorage에만 남아 있는 유령 로그인 정리
+        userStore.set(null);
+      }
+    });
+    return () => {
+      cancelled = true;
+    };
   }, [showToast]);
+
+  const login = useCallback(async (next?: string) => {
+    // 실제 OAuth: 카카오로 리다이렉트된다. 상태 반영은 복귀 후 위 세션 동기화가 담당.
+    await loginWithKakao(next ?? "/");
+  }, []);
 
   const logout = useCallback(async () => {
     await logoutService();

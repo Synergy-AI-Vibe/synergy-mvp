@@ -1,7 +1,7 @@
 "use client";
 
 import { Suspense, useState } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useRecibiApp } from "@/context/RecibiAppContext";
 import { KakaoButton } from "@/components/recibi/ui/KakaoButton/KakaoButton";
 import { TextLink } from "@/components/recibi/ui/TextLink/TextLink";
@@ -9,7 +9,7 @@ import styles from "./page.module.css";
 
 // a1 로그인. backView는 ?next= 로 기억한다 (02_동작규칙 11항 "되돌아갈 곳을 기억해야 합니다")
 function LoginForm() {
-  const router = useRouter();
+
   const searchParams = useSearchParams();
   const { login } = useRecibiApp();
   const [isPending, setIsPending] = useState(false);
@@ -20,8 +20,13 @@ function LoginForm() {
   async function handleLogin() {
     if (isPending) return;
     setIsPending(true);
-    await login();
-    router.replace(next);
+    try {
+      // 실제 OAuth: 카카오로 페이지가 이동하므로 router.replace는 하지 않는다.
+      // 복귀 경로(next)는 /auth/callback?next= 로 전달되어 콜백이 되돌려보낸다.
+      await login(next);
+    } catch {
+      setIsPending(false); // 시작 실패 시에만 버튼 복구 (성공 시엔 페이지가 떠난다)
+    }
   }
 
   return (
