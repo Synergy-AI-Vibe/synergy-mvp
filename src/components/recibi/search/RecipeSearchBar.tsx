@@ -34,11 +34,6 @@ interface RecipeSearchBarProps {
   mode: RecipeInputMode;
 }
 
-/** 주소에 붙는 값 — 기본값(url)은 굳이 남기지 않아 주소가 깔끔하게 유지된다 */
-export function parseRecipeInputMode(value: string | string[] | undefined): RecipeInputMode {
-  return value === "text" ? "text" : "url";
-}
-
 /**
  * h1 링크 입력 · h2 직접 입력 · h3 형식오류 · c2 계산 대기 · h4 추출실패를 한 덩어리로 묶은 검색부.
  * 홈과 결과 화면 최상단에 같은 모습으로 놓인다 — 결과를 보는 중에도 넣은 링크가 그 자리에 남아야 한다.

@@ -1,8 +1,6 @@
 import Link from "next/link";
-import {
-  parseRecipeInputMode,
-  RecipeSearchBar,
-} from "@/components/recibi/search/RecipeSearchBar";
+import { RecipeSearchBar } from "@/components/recibi/search/RecipeSearchBar";
+import { parseRecipeInputMode } from "@/lib/recibi/search-mode";
 
 // h1 홈(링크/직접입력) · h3 형식오류 · c2 계산대기 · h4 추출실패는 전부 RecipeSearchBar 안의 상태다.
 // 02_동작규칙 11항: "실제 경로는 네 개면 충분합니다 — 홈(h1 h2 h3)"이므로 라우팅을 나누지 않는다.

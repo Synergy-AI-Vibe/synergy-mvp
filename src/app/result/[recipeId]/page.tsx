@@ -19,10 +19,8 @@ import { CompareBar } from "@/components/recibi/ui/CompareBar/CompareBar";
 import { IngredientRow } from "@/components/recibi/ui/IngredientRow/IngredientRow";
 import { BookmarkButton } from "@/components/recibi/ui/BookmarkButton/BookmarkButton";
 import { Banner } from "@/components/recibi/ui/Banner/Banner";
-import {
-  parseRecipeInputMode,
-  RecipeSearchBar,
-} from "@/components/recibi/search/RecipeSearchBar";
+import { RecipeSearchBar } from "@/components/recibi/search/RecipeSearchBar";
+import { parseRecipeInputMode } from "@/lib/recibi/search-mode";
 
 type TabKey = "savings" | "ingredients" | "steps";
 
