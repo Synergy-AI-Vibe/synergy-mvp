@@ -123,9 +123,15 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
 /**
  * 503(과부하)·429(레이트리밋)는 무료 티어에서 흔한 일시 오류라 지수 백오프로 재시도한다.
+ *
+ * 429 중에서도 "quota exceeded"(일일 할당량 소진)는 같은 키로 아무리 기다려도
+ * 안 풀리므로 백오프 대신 즉시 다음 키로 넘어간다 — GEMINI_API_KEYS 풀이 있을 때만
+ * 의미가 있고, 키가 하나뿐이면 예전처럼 그 키로만 재시도한다.
  * 그래도 안 되면 호출부가 다음 모델로 폴백할 수 있도록 에러를 그대로 올린다.
  */
 export async function generateJsonWithRetry(opts, { attempts = 4, baseDelay = 2000 } = {}) {
+  const pool = apiKeys();
+  const keyRounds = Math.max(pool.length, 1);
   let last;
   for (let i = 0; i < attempts; i++) {
     try {
@@ -142,9 +148,9 @@ export async function generateJsonWithRetry(opts, { attempts = 4, baseDelay = 20
   throw last;
 }
 
-export async function generateJson({ model, system, user, schema, timeout = 90000 }) {
-  const key = apiKey();
-  if (!key) throw new Error('GEMINI_API_KEY 환경변수가 없습니다.');
+export async function generateJson({ model, system, user, schema, timeout = 90000, key }) {
+  const useKey = key || apiKey();
+  if (!useKey) throw new Error('GEMINI_API_KEY 환경변수가 없습니다.');
 
   const body = {
     contents: [{ role: 'user', parts: [{ text: user }] }],
@@ -159,7 +165,7 @@ export async function generateJson({ model, system, user, schema, timeout = 9000
   const ac = new AbortController();
   const timer = setTimeout(() => ac.abort(), timeout);
   try {
-    const res = await fetch(`${BASE}/models/${model}:generateContent?key=${key}`, {
+    const res = await fetch(`${BASE}/models/${model}:generateContent?key=${useKey}`, {
       method: 'POST',
       signal: ac.signal,
       headers: { 'content-type': 'application/json' },

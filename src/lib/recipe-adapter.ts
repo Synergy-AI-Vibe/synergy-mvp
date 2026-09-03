@@ -10,7 +10,8 @@
  *   · 나중에 파이프라인을 바꿔도 이 파일만 고치면 됩니다
  *
  * PoC 에 없어서 여기서 채우는 것
- *   store   매장가 — PoC 에는 사용자 입력 input 하나뿐이라 DB 에서 가져옵니다
+ *   store   매장가 — PoC 에는 사용자 입력 input 하나뿐이라 여기서 채웁니다.
+ *           Gemini 추정(중앙값)을 우선 쓰고, 실패하면 DB(store_price) 매칭으로 폴백합니다.
  *   totals  5.7 계산식 — calc.ts 로 계산합니다 (FE 재계산과 같은 함수)
  *   warnings 주재료 누락 · 추정치 개수 (NFR-04 · NFR-05)
  */
@@ -24,6 +25,7 @@ import type {
 } from '@/types/api'
 import { computeTotals, computeWarnings } from '@/lib/calc'
 import { matchStorePrice } from '@/lib/data/store-price'
+import { estimateStorePrice } from '@/lib/recipe/price/llm-store-price.js'
 
 // PoC 출력 타입은 경계 선언(lib/recipe/analyze.d.ts)에 있습니다
 import type { PocItem, PocPriceSource, PocResult } from '@/lib/recipe/analyze.js'
@@ -55,7 +57,7 @@ export async function toAnalyzeResponse(
   const rows = items.map(toRow)
 
   const title = poc.fetched.title ?? ''
-  const store = title ? await matchStorePrice(title) : null
+  const store = title ? await resolveStorePrice(title) : null
 
   const recipe: Recipe = {
     title: title || '이름 없는 레시피',
@@ -80,6 +82,19 @@ export async function toAnalyzeResponse(
   }
 
   return { status: 'success', data }
+}
+
+/**
+ * 매장가(사 먹으면 얼마) 조회.
+ *
+ * Gemini 추정(중앙값)을 우선 쓴다 — store_price DB는 20개 카테고리만
+ * 조사돼 있고 그마저 대부분 비어 있어(BE-3), 실제 레시피 제목 대부분이
+ * 매칭되지 않는다. Gemini가 죽거나 키가 없으면 DB 매칭으로 폴백한다.
+ */
+async function resolveStorePrice(title: string) {
+  const estimated = await estimateStorePrice(title)
+  if (estimated) return estimated
+  return matchStorePrice(title)
 }
 
 /**

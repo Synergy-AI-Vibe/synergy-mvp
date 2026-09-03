@@ -297,6 +297,19 @@ export default {
       "sourceTier": 1,
       "sourceName": "KAMIS 채소류 소매가 기준 시드"
     },
+    "밀가루": {
+      "per": "g",
+      "unitPrice": 2,
+      "pack": {
+        "size": 1000,
+        "unit": "g",
+        "price": 2000,
+        "label": "1kg (박력분)"
+      },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "오픈마켓 시세 기준 시드(박력분·중력분·강력분 공통 근사)"
+    },
     "쌀": {
       "per": "g",
       "unitPrice": 3.2,
