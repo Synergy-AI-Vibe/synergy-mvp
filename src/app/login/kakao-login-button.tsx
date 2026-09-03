@@ -13,6 +13,7 @@ export default function KakaoLoginButton() {
       provider: "kakao",
       options: {
         redirectTo: `${window.location.origin}/auth/callback`,
+        scopes: "profile_nickname", // 닉네임만 요청 — 이메일 등 추가 동의항목 불필요
       },
     });
     if (error) {
