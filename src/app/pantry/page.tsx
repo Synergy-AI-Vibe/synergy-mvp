@@ -1,13 +1,11 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { pantryRecommendedChips } from "@/lib/data/recibi/ingredients";
 import { searchPantryRecipes } from "@/lib/services/recibi/pantry-service";
-import { formatWon } from "@/lib/recibi/calc";
+import { formatWon } from "@/lib/calc";
 import { Chip, ChipAddInput } from "@/components/recibi/ui/Chip/Chip";
 import { Button } from "@/components/recibi/ui/Button/Button";
-import { ButtonGhost } from "@/components/recibi/ui/ButtonGhost/ButtonGhost";
 import { TextLink } from "@/components/recibi/ui/TextLink/TextLink";
 import { ListRow } from "@/components/recibi/ui/ListRow/ListRow";
 import { Tag } from "@/components/recibi/ui/Tag/Tag";
@@ -24,7 +22,6 @@ const LEAD =
 
 // p1 시작 · p2 결과 · p3 결과 없음 · p4 5개 가득 — 전부 이 화면의 상태다 (02_동작규칙 7항, SUB)
 export default function PantryPage() {
-  const router = useRouter();
   const [chosen, setChosen] = useState<ChosenPantryIngredient[]>([]);
   const [results, setResults] = useState<PantryMatch[] | null>(null); // null = 아직 안 찾음(p1)
   const [isSearching, setIsSearching] = useState(false);
@@ -154,9 +151,7 @@ export default function PantryPage() {
               <Button size="sm" onClick={resetAll}>
                 재료 다시 고르기
               </Button>
-              <ButtonGhost quiet size="sm" onClick={() => router.push("/")}>
-                링크로 계산하기
-              </ButtonGhost>
+              <TextLink href="/">링크로 계산하기</TextLink>
             </div>
           </NoticeCard>
         </section>
@@ -188,14 +183,15 @@ export default function PantryPage() {
                 trailing={
                   <span className="text-right">
                     <span className="block text-[14.5px] font-bold text-text">
-                      추가 {formatWon(match.extraCost)}
+                      추가 {formatWon(match.extraCost)}원
                     </span>
                     <span className="block text-[12.5px] text-accent">
-                      {formatWon(match.savings)} 절약
+                      {formatWon(match.savings)}원 절약
                     </span>
                   </span>
                 }
-                onOpen={() => router.push(`/result/${match.recipe.id}`)}
+                // LLM 추천 메뉴는 저장된 레시피가 아니라 r1(결과 화면)이 성립하지 않는다.
+                // onOpen을 주지 않으면 ListRow가 버튼을 비활성화한다 — 목록에서 종결.
               />
             ))}
           </ul>

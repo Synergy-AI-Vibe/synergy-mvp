@@ -11,8 +11,8 @@ import { ButtonGhost } from "@/components/recibi/ui/ButtonGhost/ButtonGhost";
 import { NoticeCard } from "@/components/recibi/ui/NoticeCard/NoticeCard";
 import { Skeleton } from "@/components/recibi/ui/Skeleton/Skeleton";
 import { isYoutubeUrl } from "@/lib/recibi/validate";
-import { extractRecipeFromText, extractRecipeFromUrl } from "@/lib/services/recibi/recipe-service";
-import type { ExtractionResult } from "@/lib/services/recibi/recipe-service";
+import { setCurrentAnalysis } from "@/lib/current-analysis";
+import type { AnalyzeRequest, AnalyzeResponse } from "@/types/api";
 import type { RecipeInputMode } from "@/types/recibi";
 
 const ACTIONS_ROW = "mt-[14px] flex flex-wrap gap-2.5";
@@ -28,6 +28,13 @@ const TEXT_PLACEHOLDER =
 const TEXT_BAR_NOTE = "한 줄에 재료 하나 · 인사말이나 타임스탬프는 알아서 걸러냅니다";
 const TEXT_HINT =
   "'한 줌 · 적당량' 같은 표현은 평균값으로 바꿔 계산하고, 아래 재료별 금액에서 고칠 수 있습니다.";
+
+/** h4 — 실패 사유는 서버가 문구까지 내려준다. 화면에서 지어내지 않는다 */
+interface FailureInfo {
+  eyebrow: string;
+  title: string;
+  description: string;
+}
 
 interface RecipeSearchBarProps {
   /** 지금 열려 있는 입력 모드. 주소의 ?mode= 를 페이지가 읽어 넘긴다 */
@@ -48,7 +55,7 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
   const { search, setSearch } = useRecibiApp();
   const [urlError, setUrlError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasFailed, setHasFailed] = useState(false);
+  const [failure, setFailure] = useState<FailureInfo | null>(null);
   const [recoveryText, setRecoveryText] = useState("");
 
   const { url, text } = search;
@@ -73,17 +80,58 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
     if (urlError) setUrlError(false); // 한 글자라도 고치면 오류 상태 즉시 해제
   }
 
-  async function goToResult(extractor: () => Promise<ExtractionResult>) {
+  async function callAnalyze(body: AnalyzeRequest) {
     setIsSubmitting(true);
-    const result = await extractor();
-    setIsSubmitting(false);
-    if (result.ok && result.recipe) {
-      setHasFailed(false);
-      const query = mode === "text" ? "?mode=text" : "";
-      router.push(`/result/${result.recipe.id}${query}`);
+    let response: AnalyzeResponse;
+    try {
+      const res = await fetch("/api/analyze", {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      response = (await res.json()) as AnalyzeResponse;
+    } catch {
+      setIsSubmitting(false);
+      setFailure({
+        eyebrow: "연결 실패",
+        title: "서버에 연결하지 못했습니다",
+        description: "네트워크 상태를 확인한 뒤 다시 시도해 주세요.",
+      });
       return;
     }
-    setHasFailed(true);
+    setIsSubmitting(false);
+
+    if (response.status === "success") {
+      setFailure(null);
+      setCurrentAnalysis(response.data);
+      const { sourceType, sourceUrl } = response.data.recipe;
+      const query =
+        sourceType === "youtube" && sourceUrl ? `?url=${encodeURIComponent(sourceUrl)}` : "";
+      router.push(`/result${query}`);
+      return;
+    }
+
+    if (response.status === "error" && response.code === "INVALID_URL") {
+      setUrlError(true);
+      return;
+    }
+
+    if (response.status === "no_recipe_found") {
+      setFailure({
+        eyebrow: "추출 실패",
+        title: response.videoTitle
+          ? `"${response.videoTitle}"에서 재료를 찾지 못했습니다`
+          : "설명란에서 재료를 찾지 못했어요",
+        description: response.message,
+      });
+      return;
+    }
+
+    setFailure({
+      eyebrow: "추출 실패",
+      title: "계산에 실패했습니다",
+      description: response.message,
+    });
   }
 
   async function handleUrlSubmit() {
@@ -92,24 +140,24 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
       return;
     }
     setUrlError(false);
-    await goToResult(() => extractRecipeFromUrl(url));
+    await callAnalyze({ url });
   }
 
   async function handleTextSubmit() {
-    if (!text.trim()) return; // 02_동작규칙 10-1 미정 — 최소 방어만 둔다
-    await goToResult(() => extractRecipeFromText(text));
+    if (!text.trim()) return; // 빈 입력 검증 규칙은 아직 정해지지 않아 최소 방어만 둔다
+    await callAnalyze({ text });
   }
 
   async function handleRecoverySubmit() {
     if (!recoveryText.trim()) return;
-    await goToResult(() => extractRecipeFromText(recoveryText));
+    await callAnalyze({ text: recoveryText });
   }
 
   /** 넣은 링크와 그에 딸린 오류·실패 상태만 되돌린다 (직접 입력해 둔 글은 건드리지 않는다) */
   function clearUrl() {
     setSearch({ url: "" });
     setUrlError(false);
-    setHasFailed(false);
+    setFailure(null);
     setRecoveryText("");
   }
 
@@ -117,7 +165,7 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
   function reset() {
     setSearch({ url: "", text: "" });
     setUrlError(false);
-    setHasFailed(false);
+    setFailure(null);
     setRecoveryText("");
     goToMode("url");
   }
@@ -137,11 +185,7 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
             showYoutubeTag={url.length > 0 && !urlError && isYoutubeUrl(url)}
             onClear={clearUrl}
             action={
-              <Button
-                variant="accent"
-                onClick={handleUrlSubmit}
-                disabled={isSubmitting || urlError}
-              >
+              <Button variant="accent" onClick={handleUrlSubmit} disabled={isSubmitting || urlError}>
                 {isSubmitting ? "계산 중" : "원가 계산"}
               </Button>
             }
@@ -175,14 +219,12 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
         </div>
       )}
 
-      {hasFailed && (
+      {failure && (
         <div className="mt-[34px]">
           <NoticeCard
-            eyebrow="추출 실패"
-            title="설명란에서 재료를 찾지 못했어요"
-            description={
-              "이 영상은 설명란에 재료 목록이 없습니다. 재료를 직접 적어 주시면 같은 방식으로 계산해 드립니다."
-            }
+            eyebrow={failure.eyebrow}
+            title={failure.title}
+            description={failure.description}
           >
             <RecipeTextarea
               quiet

@@ -8,7 +8,7 @@ interface ListRowProps {
   titleTag?: ReactNode;
   meta: string;
   trailing?: ReactNode;
-  onOpen: () => void;
+  onOpen?: () => void;
   onDelete?: () => void;
 }
 
@@ -17,8 +17,9 @@ export function ListRow({ title, titleTag, meta, trailing, onOpen, onDelete }: L
     <li className="flex items-center gap-2 border-b border-line">
       <button
         type="button"
-        className="flex min-w-0 flex-1 flex-wrap items-center gap-4 py-4 text-left hover:bg-canvas focus-visible:outline-offset-[-2px] active:bg-line"
+        className="flex min-w-0 flex-1 flex-wrap items-center gap-4 py-4 text-left enabled:hover:bg-canvas focus-visible:outline-offset-[-2px] enabled:active:bg-line"
         onClick={onOpen}
+        disabled={!onOpen}
       >
         <span className="flex min-w-[170px] flex-1 flex-col gap-1">
           <span className="flex flex-wrap items-center gap-2">

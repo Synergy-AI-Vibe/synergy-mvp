@@ -1,6 +1,6 @@
-import { formatWon } from "@/lib/recibi/calc";
+import { formatWon } from "@/lib/calc";
 
-/** 부품 20 — 비교 막대. "사 먹으면" 항상 100%, "해먹으면"은 채움 비율만큼 (02_동작규칙 3-2) */
+/** 부품 20 — 비교 막대. "사 먹으면" 항상 100%, "해 먹으면"은 채움 비율만큼 (02_동작규칙 3-2) */
 interface CompareBarProps {
   eatOutAvg: number;
   ingredientTotal: number;
@@ -20,14 +20,14 @@ export function CompareBar({ eatOutAvg, ingredientTotal, fillPercent }: CompareB
         <span className={TRACK}>
           <span className="block h-full bg-text" style={{ width: "100%" }} />
         </span>
-        <span className={VALUE}>{formatWon(eatOutAvg)}</span>
+        <span className={VALUE}>{formatWon(eatOutAvg)}원</span>
       </div>
       <div className={BAR}>
         <span className={LABEL}>해 먹으면</span>
         <span className={TRACK}>
           <span className="block h-full bg-accent" style={{ width: `${fillPercent}%` }} />
         </span>
-        <span className={`${VALUE} text-accent`}>{formatWon(ingredientTotal)}</span>
+        <span className={`${VALUE} text-accent`}>{formatWon(ingredientTotal)}원</span>
       </div>
     </div>
   );

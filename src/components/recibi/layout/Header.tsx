@@ -16,8 +16,17 @@ const SEP = "h-3.5 w-px bg-line-2";
 
 export function Header() {
   const pathname = usePathname();
-  const { isLoggedIn, user, logout, openLoginModal, openWithdrawModal } = useRecibiApp();
+  const { isLoggedIn, user, openLoginModal, openWithdrawModal } = useRecibiApp();
   const navClass = (href: string) => `${NAV_ITEM} ${pathname === href ? NAV_ON : NAV_OFF}`;
+
+  function handleLogout() {
+    // /auth/signout은 POST만 받는다(링크 프리페치로 실수 로그아웃 방지) — 실제 <form> 제출로 부른다.
+    const form = document.createElement("form");
+    form.method = "post";
+    form.action = "/auth/signout";
+    document.body.appendChild(form);
+    form.submit();
+  }
 
   return (
     <header className="border-b border-line">
@@ -43,7 +52,7 @@ export function Header() {
           )}
 
           {isLoggedIn && user ? (
-            <AccountMenu name={user.name} onLogout={logout} onWithdraw={openWithdrawModal} />
+            <AccountMenu name={user.name} onLogout={handleLogout} onWithdraw={openWithdrawModal} />
           ) : (
             <button type="button" className={`${NAV_ITEM} ${NAV_ON}`} onClick={() => openLoginModal()}>
               로그인
