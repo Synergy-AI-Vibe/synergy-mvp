@@ -4,6 +4,7 @@
 //   B. 헤더 인라인: "재료 : 돼지고기, 물 550ml, 김치" 처럼 한 줄에 쉼표로 나열
 //   C. 밀도 탐지  : 헤더가 아예 없고 재료처럼 생긴 줄이 연속으로 나오는 구간 (네이버 블로그에 흔함)
 import { parseQuantity, normalizeUnit, toBaseAmount, VAGUE_UNITS } from './units.js';
+import { detectMeasureBasis, applyMeasureBasis } from './measure-basis.js';
 
 const UNIT_WORDS = [
   'kg', 'KG', 'g', 'G', 'mL', 'ml', 'ML', 'L', 'l', 'cc', 'CC',
@@ -371,6 +372,10 @@ export function extractIngredients(text, { source = 'unknown' } = {}) {
     seen.set(key, true);
     deduped.push(it);
   }
+
+  // 본문에 계량 기준 선언("1큰술 = 10g" 등)이 있으면 환산표 기본값보다 우선한다
+  const measureBasis = detectMeasureBasis(text);
+  if (measureBasis.size) applyMeasureBasis(deduped, measureBasis);
 
   const method = deduped.length === 0 ? 'none' : [...methods].join('+');
   return {
