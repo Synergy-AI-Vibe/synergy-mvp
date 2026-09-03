@@ -34,11 +34,17 @@ export async function analyze({ url, text, overrides = {}, servings = null } = {
   // 이름 정규화를 가격 조회 **전에** 한 번에 끝낸다.
   //   규칙 → DB 별칭 캐시 → LLM  (5.5)
   // 재료마다 LLM 을 부르지 않기 위해 여기서 배치로 푼다.
-  const { map: canonicalMap, stats: normalizeStats } = await resolveCanonicalNames(
+  const { map: canonicalMap, stats: normalizeStats, notIngredient } = await resolveCanonicalNames(
     extraction.items.map((i) => i.name)
   );
 
-  const pricing = await priceRecipe(extraction.items, {
+  // LLM 이 "재료가 아니다"라고 판정한 행(조리 단계·도구·문장 조각)은 결과에서 뺀다.
+  // LLM 이 죽어 판정이 없으면 그대로 둔다 — 실수로 진짜 재료를 숨기는 것보다 낫다.
+  const items = notIngredient?.size
+    ? extraction.items.filter((i) => !notIngredient.has(i.name))
+    : extraction.items;
+
+  const pricing = await priceRecipe(items, {
     overrides,
     servings: effectiveServings,
     canonicalMap,

@@ -6,6 +6,7 @@ import { toBaseAmount } from '../parse/units.js';
 import SEED_DATA from './seed.js';
 import { hasKeys as hasKamisKeys, fetchLatestIndex } from './kamis.js';
 import { KAMIS_MAP, selectRow } from './kamis-map.js';
+import { lookupWebPrice } from './llm-price.js';
 
 const SEED = SEED_DATA;
 
@@ -81,6 +82,28 @@ function describeRow(row) {
 const ALIASES = [
   // 우삼겹은 소고기라 돼지고기보다 먼저 걸러야 한다('삼겹'이 겹친다)
   [/(우삼겹|차돌박이|차돌)/, '차돌박이'],
+  // ── 가공식품 (2026-09-03 조사분) ──
+  // 뒤의 원물 규칙보다 먼저 걸러야 한다: 감자전분→감자, 튀김가루→김(김가루),
+  // 토마토소스→토마토, 오징어채→물오징어, 참치액→참치 로 오매핑되던 문제.
+  [/(감자\s?전분|옥수수\s?전분|전분\s?가루|전분)/, '전분'],
+  [/(튀김\s?가루)/, '튀김가루'],
+  [/(빵가루)/, '빵가루'],
+  [/(밀가루|중력분|박력분|강력분)/, '밀가루'],
+  [/(토마토\s?소스|파스타\s?소스)/, '토마토소스'],
+  [/(진미채|오징어채|오징어\s?실채)/, '진미채'],
+  [/(참치캔|캔참치|참치(?!액))/, '참치캔'],
+  [/(모짜렐라|모차렐라|피자\s?치즈)/, '모짜렐라치즈'],
+  [/(슬라이스\s?치즈|체다\s?치즈)/, '슬라이스치즈'],
+  [/(스파게티\s?면|파스타\s?면|스파게티)/, '파스타면'],
+  [/(소면|중면|국수)/, '소면'],
+  [/(라면\s?사리|사리면)/, '라면사리'],
+  [/(만두(?!피))/, '만두'],
+  [/(마요네즈)/, '마요네즈'],
+  [/(올리브\s?유|올리브\s?오일)/, '올리브유'],
+  [/(식초)/, '식초'],
+  [/(꿀)/, '꿀'],
+  [/(생크림|휘핑\s?크림)/, '생크림'],
+  [/(베이컨)/, '베이컨'],
   // 앵커(^)를 두면 '통삼겹'·'수육용 목살'처럼 수식어가 앞에 붙은 표기를 놓친다
   [/(돼지고기|통삼겹|삼겹|목살|목심|앞다리|뒷다리|전지|후지|제육|^돼지)/, '돼지고기'],
   [/(소고기|소불고기|불고기용|한우)/, '소고기'],
@@ -93,7 +116,8 @@ const ALIASES = [
   [/(황설탕|흑설탕|백설탕|^설탕)/, '설탕'],
   [/(가는소금|고운\s?소금|천일염|^소금)/, '소금'],
   [/(올리고당|물엿|쌀조청|조청)/, '물엿'],
-  [/(청주|미림|^맛술)/, '맛술'],
+  [/(청주|청하|미림|^맛술)/, '맛술'],
+  [/(박력분|중력분|강력분|^밀가루)/, '밀가루'],
   [/(까나리액젓|멸치액젓|^액젓)/, '멸치액젓'],
   [/(참치액|^다시다|미원|msg|치킨스톡|소고기\s?다시다|고향의\s?맛\s?다시다)/i, '다시다'],
   [/(코인육수)/, '코인육수'],
@@ -124,6 +148,15 @@ const ALIASES = [
   [/(케찹|케첩|토마토케첩)/, '케첩'],
   [/(버터|가염버터|무염버터)/, '버터'],
   [/(카레가루|분말카레|카레분말|오뚜기분말카레|고형카레)/, '카레가루'],
+  // 2026-09-03 unmatched_ingredient 수집분 반영 (시드 조사값과 세트)
+  [/(부침\s?가루|부침개\s?가루)/, '부침가루'],
+  // 밥은 완전 일치만 — 앵커 없이 두면 볶음밥·비빔밥·밥숟가락이 전부 걸린다 (1-2의 예외 케이스)
+  [/^(밥|쌀밥|공기밥|흰밥|현미밥|즉석밥|햇반)$/, '즉석밥'],
+  [/(스팸|런천미트|리챔)/, '스팸'],
+  [/(사골\s?육수|사골\s?국물|사골곰탕)/, '사골육수'],
+  [/(들깨\s?가루|들깻가루)/, '들깨가루'],
+  [/(소주)/, '소주'],
+  [/(레몬)/, '레몬'],
   // 시드에는 없지만 KAMIS 에 있는 품목들
   [/(물오징어|오징어)/, '물오징어'],
   [/(바지락)/, '바지락'],
@@ -161,9 +194,9 @@ export function canonicalize(name) {
   return null;
 }
 
-/** tier2 자리표시자. 오픈마켓 크롤링을 붙일 때 여기만 구현하면 된다. */
-async function tier2Lookup(_canonical) {
-  return null;
+/** tier2: 웹 시세 — LLM + 검색 그라운딩 (llm-price.js). 못 찾으면 조용히 null. */
+async function tier2Lookup(canonical, rawName) {
+  return lookupWebPrice(canonical || rawName);
 }
 
 /**
@@ -238,11 +271,12 @@ export async function priceItem(item, overrides = {}, canonicalMap = null) {
     tier = entry.sourceTier;
     sourceName = `${entry.sourceName} (시드)`;
   } else {
-    const t2 = await tier2Lookup(canonical);
+    const t2 = await tier2Lookup(canonical, item.name);
     if (t2) {
-      entry = t2;
+      entry = { ...t2, category: guessCategory(item.name) };
       tier = 2;
       sourceName = t2.sourceName;
+      asOf = t2.asOf || asOf;
     }
   }
 

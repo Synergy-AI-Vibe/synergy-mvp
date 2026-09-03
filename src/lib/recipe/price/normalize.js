@@ -21,7 +21,7 @@
 import { canonicalize, CANONICAL_LIST } from './index.js';
 import { normalizeNames } from './llm-normalize.js';
 import { getAliasStore } from './alias-store.js';
-import { pickModel } from '../llm/gemini.js';
+import { pickModel, apiKey } from '../llm/gemini.js';
 
 // 모델은 프로세스당 한 번만 고른다. PoC 에서는 eval/probe 가 pickModel() 결과를
 // 넘겨줬지만 이 연결부에는 그 호출이 없어 model=undefined 로 404가 났다.
@@ -48,11 +48,14 @@ const CANONICAL_SET = new Set(CANONICAL_LIST);
  */
 export async function resolveCanonicalNames(rawNames, opts = {}) {
   const store = opts.store ?? getAliasStore();
-  const useLlm = opts.useLlm ?? Boolean(process.env.GEMINI_API_KEY);
+  // 키 풀(GEMINI_API_KEYS)도 인식해야 하므로 환경변수를 직접 보지 않는다
+  const useLlm = opts.useLlm ?? Boolean(apiKey());
 
   const unique = [...new Set(rawNames.map((n) => String(n || '').trim()).filter(Boolean))];
   const map = new Map();
-  const stats = { total: unique.length, rule: 0, cache: 0, llm: 0, missed: 0, llmCalled: false };
+  // LLM 이 "재료가 아니다"라고 판정한 표기 — 호출부가 결과 행에서 제거한다
+  const notIngredient = new Set();
+  const stats = { total: unique.length, rule: 0, cache: 0, llm: 0, missed: 0, filtered: 0, llmCalled: false };
 
   // ── 1단계: 규칙 ────────────────────────────────────────────
   const pending = [];
@@ -65,7 +68,7 @@ export async function resolveCanonicalNames(rawNames, opts = {}) {
       pending.push(name);
     }
   }
-  if (pending.length === 0) return { map, stats };
+  if (pending.length === 0) return { map, stats, notIngredient };
 
   // ── 2단계: DB 캐시 ─────────────────────────────────────────
   const stillPending = [];
@@ -82,14 +85,14 @@ export async function resolveCanonicalNames(rawNames, opts = {}) {
       stillPending.push(name);
     }
   });
-  if (stillPending.length === 0) return { map, stats };
+  if (stillPending.length === 0) return { map, stats, notIngredient };
 
   // ── 3단계: LLM ─────────────────────────────────────────────
   if (!useLlm) {
     for (const name of stillPending) map.set(name, null);
     stats.missed += stillPending.length;
     await recordAll(store, stillPending.map((n) => ({ name: n })));
-    return { map, stats };
+    return { map, stats, notIngredient };
   }
 
   try {
@@ -109,6 +112,12 @@ export async function resolveCanonicalNames(rawNames, opts = {}) {
         map.set(name, canonical);
         stats.llm += 1;
         toSave.push({ name, canonical, confidence: r.confidence, reason: r.reason });
+      } else if (r && r.isIngredient === false) {
+        // 조리 단계·도구·문장 조각 — 결과 행에서 제거된다 (5.5 "조리 단계나 문장 조각")
+        map.set(name, null);
+        notIngredient.add(name);
+        stats.filtered += 1;
+        toRecord.push({ name, reason: r.reason ?? '재료 아님', confidence: r.confidence ?? null });
       } else {
         map.set(name, null);
         stats.missed += 1;
@@ -127,7 +136,7 @@ export async function resolveCanonicalNames(rawNames, opts = {}) {
     stats.missed += stillPending.filter((n) => !map.get(n)).length;
   }
 
-  return { map, stats };
+  return { map, stats, notIngredient };
 }
 
 function recordAll(store, items) {
