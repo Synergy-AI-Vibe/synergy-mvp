@@ -11,6 +11,9 @@ export interface GeminiSchema {
 
 export function apiKey(): string | null
 
+/** 키 풀(GEMINI_API_KEYS)에서 다음 키로 전환. 전환했으면 true */
+export function rotateApiKey(): boolean
+
 /** 사용 가능한 모델 중 가볍고 빠른 것을 고른다 */
 export function pickModel(preferred?: string): Promise<string>
 

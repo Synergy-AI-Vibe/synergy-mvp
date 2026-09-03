@@ -96,6 +96,17 @@ export const COUNT_WEIGHTS = {
   '무:토막': 300,
   '배:개': 400,
   '사과:개': 250,
+  '스팸:캔': 200,
+  '스팸:통': 200,
+  '소주:병': 360,
+  '소주:잔': 50,
+  '즉석밥:개': 210,
+  '즉석밥:봉': 210,
+  '참치캔:캔': 150,
+  '참치캔:개': 150,
+  '슬라이스치즈:장': 18,
+  '베이컨:줄': 20,
+  '우유:팩': 900,
 };
 
 // 위 테이블에 없더라도, 재료명 끝소리로 대략 유추할 수 있는 것들 (마지막 폴백)
@@ -164,6 +175,11 @@ export function toBaseAmount(qty, unit, ingredientName) {
       base: 'ml',
       basis: `${u} 1단위 = ${VOLUME_UNITS[u]}ml 기준`,
     };
+  }
+  // 꼬집은 약간·적당량과 달리 준표준 계량(엄지+검지 ≈ 0.5g)이라 근사한다.
+  // 대상이 소금·후추류라 금액 영향은 1원 미만이고, "확인 필요" 노이즈를 없애는 게 목적.
+  if (u && (u === '꼬집' || u === '한꼬집') && qty != null) {
+    return { convertible: true, amount: qty * 0.5, base: 'g', basis: '1꼬집 ≈ 0.5g 추정', approximate: true };
   }
   if (u && qty != null) {
     const key = `${ingredientName}:${u}`;

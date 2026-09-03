@@ -61,6 +61,8 @@ export interface PocResult {
     cache: number
     llm: number
     missed: number
+    /** LLM이 "재료 아님"으로 판정해 결과 행에서 제거된 수 */
+    filtered?: number
     llmCalled: boolean
   }
   pricing: {
