@@ -1,26 +1,158 @@
-@import "tailwindcss";
+/* 레시비 디자인 토큰 · 리셋 — 11_디자인시스템.md 7항 "복사용 CSS 변수"를 그대로 이식.
+   반경은 전부 0, 그림자는 토스트 한 곳뿐, 호버/눌림/초점 값은 [신규] 확정값을 그대로 쓴다. */
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  /* 글자 */
+  --text: #111111;
+  --text-2: #6e6e68;
+  --text-3: #8a8a85;
+  --text-4: #a3a39d;
+  --text-on-ink: #ffffff;
+
+  /* 면과 선 */
+  --surface: #ffffff;
+  --canvas: #f2f2f0;
+  --line: #eaeae7;
+  --line-2: #dcdcd7;
+  --line-strong: #111111;
+
+  /* 강조 */
+  --accent: #e23e2e;
+  --accent-hover: #c7331f;
+  --accent-press: #a82a19;
+  --accent-soft: #fcedeb;
+  --accent-strong: #b32b1d;
+  --ink-hover: #2e2e2c;
+  --ink-press: #000000;
+
+  /* 그 밖 */
+  --disabled: #c9c9c3;
+  --chip-mark: #b8b8b2;
+  --kakao: #fee500;
+  --focus: #e23e2e;
+  --shadow-toast: 0 6px 20px rgba(17, 17, 17, 0.24);
+
+  /* 폭 */
+  --content: 760px;
+  --gutter: clamp(20px, 4vw, 28px);
+  --tap: 44px;
+
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  border-radius: 0; /* 반경 0이 원칙입니다 */
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html,
+body {
+  height: 100%;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+  background: var(--surface);
+  color: var(--text);
+  font-family: var(--font-noto-sans-kr), "Noto Sans KR", system-ui, sans-serif;
+  font-variant-numeric: tabular-nums;
+  -webkit-font-smoothing: antialiased;
+  word-break: keep-all;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6,
+p,
+dl,
+dd {
+  margin: 0;
+}
+
+ul,
+ol {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+button {
+  background: none;
+  border: none;
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  cursor: pointer;
+}
+
+button:disabled {
+  cursor: default;
+}
+
+input,
+textarea {
+  font: inherit;
+  color: inherit;
+}
+
+textarea {
+  resize: vertical;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
+
+.on-ink:focus-visible {
+  outline-color: var(--text); /* 빨강 면 위에서는 검정 테두리 */
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation: none !important;
+    transition: none !important;
+  }
+}
+
+main {
+  flex: 1 0 auto;
+}
+
+/* 콘텐츠 폭 760px 고정 — 헤더·본문·푸터가 공통으로 쓰는 레이아웃 뼈대 (11_디자인시스템 3-3항) */
+.container {
+  max-width: var(--content);
+  margin: 0 auto;
+  padding-left: var(--gutter);
+  padding-right: var(--gutter);
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }

@@ -1,0 +1,36 @@
+.section {
+  padding-top: clamp(40px, 6vw, 72px);
+  padding-bottom: clamp(40px, 6vw, 72px);
+  display: flex;
+  justify-content: center;
+}
+
+.form {
+  width: 100%;
+  max-width: 420px;
+}
+
+.title {
+  font-size: clamp(21px, 2.6vw, 26px);
+  font-weight: 900;
+  letter-spacing: -0.035em;
+  margin-bottom: 8px;
+}
+
+.desc {
+  font-size: 13.5px;
+  line-height: 1.8;
+  color: var(--text-2);
+  margin-bottom: 28px;
+}
+
+.legal {
+  margin-top: 14px;
+  font-size: 12.5px;
+  line-height: 1.75;
+  color: var(--text-2);
+}
+
+.back {
+  margin-top: 22px;
+}

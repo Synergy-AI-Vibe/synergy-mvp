@@ -1,29 +1,33 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono } from "next/font/google";
+import { Noto_Sans_KR } from "next/font/google";
+import { RecibiAppProvider } from "@/context/RecibiAppContext";
+import { Toast } from "@/components/recibi/ui/Toast/Toast";
+import { Header } from "@/components/recibi/layout/Header";
+import { Footer } from "@/components/recibi/layout/Footer";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const notoSansKr = Noto_Sans_KR({
+  variable: "--font-noto-sans-kr",
   subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+  weight: ["400", "500", "700", "900"],
 });
 
 export const metadata: Metadata = {
-  title: "시너지 (Synergy)",
-  description: "팀 시너지 프로젝트 랜딩 페이지",
+  title: "레시비 — 유튜브 레시피 재료비 계산",
+  description: "유튜브 레시피의 재료비를 계산해 사 먹을 때와 비교하는 서비스",
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="ko" className={`${notoSansKr.variable}`}>
+      <body>
+        <RecibiAppProvider>
+          <Header />
+          {children}
+          <Footer />
+          <Toast />
+        </RecibiAppProvider>
+      </body>
     </html>
   );
 }
