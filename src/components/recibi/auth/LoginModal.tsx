@@ -26,7 +26,7 @@ export function LoginModal() {
   }
 
   return (
-    <Modal open={open} title="로그인" onClose={closeModal}>
+    <Modal open={open} title="카카오로 시작하기" onClose={closeModal}>
       <p className="mb-[22px] text-[13.5px] leading-[1.8] text-text-2">
         {fromResult
           ? "이 레시피를 북마크하려면 로그인이 필요합니다."
@@ -34,7 +34,7 @@ export function LoginModal() {
       </p>
 
       <KakaoButton onClick={handleLogin} disabled={isPending}>
-        {isPending ? "로그인 중" : "카카오로 로그인"}
+        {isPending ? "로그인 중" : "카카오로 3초 만에 시작하기"}
       </KakaoButton>
 
       <p className="mt-[14px] text-[12.5px] leading-[1.75] text-text-2">계속하면 이용약관과 개인정보 처리방침에 동의하는 것으로 봅니다.</p>

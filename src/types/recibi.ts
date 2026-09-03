@@ -2,6 +2,18 @@
 
 export type PriceSource = "참가격" | "KAMIS" | "오픈마켓";
 
+/** h1 링크로 계산 ↔ h2 레시피 직접 입력 (02_동작규칙 2-1) */
+export type RecipeInputMode = "url" | "text";
+
+/**
+ * 홈에서 넣은 검색 입력. 결과 화면 상단에도 같은 자리에 그대로 남아야 해서 화면 밖에 둔다.
+ * 입력 모드는 여기가 아니라 주소의 ?mode= 로 다룬다 — 링크를 걸거나 새로고침해도 유지되어야 한다.
+ */
+export interface RecipeSearchState {
+  url: string;
+  text: string;
+}
+
 /** 재료 가격표 1행 — 18종 고정 목업 (KAMIS·참가격·오픈마켓 대응) */
 export interface IngredientPriceEntry {
   id: string;

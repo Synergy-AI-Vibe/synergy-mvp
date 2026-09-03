@@ -18,12 +18,13 @@ import {
   useSyncExternalStore,
 } from "react";
 import { loginWithKakao, logout as logoutService, withdrawAccount } from "@/lib/services/recibi/auth-service";
-import type { Bookmark, Recipe, ToastMessage, User } from "@/types/recibi";
+import type { Bookmark, Recipe, RecipeSearchState, ToastMessage, User } from "@/types/recibi";
 
 const USER_STORAGE_KEY = "recibi:user";
 const BOOKMARKS_STORAGE_KEY = "recibi:bookmarks";
 const TOAST_DURATION_MS = 2600;
 const BOOKMARK_LIMIT = 5;
+const EMPTY_SEARCH: RecipeSearchState = { url: "", text: "" };
 
 type AddBookmarkResult = "saved" | "full" | "unauthenticated";
 
@@ -43,6 +44,9 @@ interface RecibiAppContextValue {
   removeBookmark: (id: string) => void;
   toast: ToastMessage | null;
   showToast: (message: ToastMessage) => void;
+  /** 홈에서 넣은 검색 입력. 결과 화면 상단 검색부가 같은 값을 이어서 보여준다 (모드는 ?mode=) */
+  search: RecipeSearchState;
+  setSearch: (patch: Partial<RecipeSearchState>) => void;
   modal: ModalState;
   openLoginModal: (options?: { fromResult?: boolean }) => void;
   openWithdrawModal: () => void;
@@ -104,7 +108,12 @@ export function RecibiAppProvider({ children }: { children: React.ReactNode }) {
 
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const [search, setSearchState] = useState<RecipeSearchState>(EMPTY_SEARCH);
   const [modal, setModal] = useState<ModalState>(null);
+
+  const setSearch = useCallback((patch: Partial<RecipeSearchState>) => {
+    setSearchState((prev) => ({ ...prev, ...patch }));
+  }, []);
 
   const openLoginModal = useCallback((options?: { fromResult?: boolean }) => {
     setModal({ kind: "login", fromResult: options?.fromResult ?? false });
@@ -185,6 +194,8 @@ export function RecibiAppProvider({ children }: { children: React.ReactNode }) {
       removeBookmark,
       toast,
       showToast,
+      search,
+      setSearch,
       modal,
       openLoginModal,
       openWithdrawModal,
@@ -201,6 +212,8 @@ export function RecibiAppProvider({ children }: { children: React.ReactNode }) {
       removeBookmark,
       toast,
       showToast,
+      search,
+      setSearch,
       modal,
       openLoginModal,
       openWithdrawModal,

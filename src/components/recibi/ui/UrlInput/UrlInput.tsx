@@ -1,4 +1,7 @@
-/** 부품 10 — URL 입력창. YOUTUBE 라벨은 값이 있고, 오류가 아니고, 형식을 통과할 때만 보인다 (02_동작규칙 2-2) */
+import type { ReactNode } from "react";
+
+/** 부품 10 — URL 입력창. YOUTUBE 라벨은 값이 있고, 오류가 아니고, 형식을 통과할 때만 보인다 (02_동작규칙 2-2).
+ * action은 테두리 안 오른쪽에 붙는 실행 버튼 — 입력과 계산이 한 덩어리로 보여야 한다. */
 interface UrlInputProps {
   value: string;
   onChange: (value: string) => void;
@@ -7,6 +10,9 @@ interface UrlInputProps {
   showYoutubeTag?: boolean;
   disabled?: boolean;
   placeholder?: string;
+  action?: ReactNode;
+  /** 넘기면 값이 있을 때 테두리 안에 지우기(×) 버튼이 생긴다 */
+  onClear?: () => void;
 }
 
 const WRAP =
@@ -20,6 +26,8 @@ export function UrlInput({
   showYoutubeTag,
   disabled,
   placeholder,
+  action,
+  onClear,
 }: UrlInputProps) {
   const wrapClass = [
     WRAP,
@@ -57,6 +65,17 @@ export function UrlInput({
         }}
         aria-invalid={error || undefined}
       />
+      {onClear && value.length > 0 && (
+        <button
+          type="button"
+          className="flex flex-none items-center self-center px-2 text-[15px] text-text-2 hover:text-accent"
+          onClick={onClear}
+          aria-label="입력한 링크 지우기"
+        >
+          ×
+        </button>
+      )}
+      {action && <span className="flex flex-none items-stretch">{action}</span>}
     </div>
   );
 }

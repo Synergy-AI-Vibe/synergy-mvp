@@ -29,16 +29,16 @@ export function WithdrawModal() {
   }
 
   return (
-    <Modal open={open} title="회원탈퇴" onClose={closeModal}>
+    <Modal open={open} title="정말 탈퇴하시겠어요?" onClose={closeModal}>
       <p className="mb-[22px] text-[13.5px] leading-[1.8] text-text-2">
         저장한 북마크 {bookmarks.length}개가 모두 삭제되고 되돌릴 수 없습니다.
       </p>
 
       <div className="flex flex-wrap gap-2.5">
-        <Button variant="accent" onClick={handleWithdraw} disabled={isPending}>
+        <Button variant="accent" className="px-[30px]" onClick={handleWithdraw} disabled={isPending}>
           {isPending ? "처리 중" : "탈퇴하기"}
         </Button>
-        <ButtonGhost onClick={closeModal} disabled={isPending}>
+        <ButtonGhost className="px-[30px]" onClick={closeModal} disabled={isPending}>
           취소
         </ButtonGhost>
       </div>

@@ -23,7 +23,7 @@ export function CompareBar({ eatOutAvg, ingredientTotal, fillPercent }: CompareB
         <span className={VALUE}>{formatWon(eatOutAvg)}</span>
       </div>
       <div className={BAR}>
-        <span className={LABEL}>해먹으면</span>
+        <span className={LABEL}>해 먹으면</span>
         <span className={TRACK}>
           <span className="block h-full bg-accent" style={{ width: `${fillPercent}%` }} />
         </span>

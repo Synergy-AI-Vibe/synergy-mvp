@@ -4,7 +4,7 @@ import type { ReactNode } from "react";
 export function Banner({ children }: { children: ReactNode }) {
   return (
     <div
-      className="mb-[22px] flex flex-wrap items-baseline gap-2 bg-accent-soft px-[17px] py-[13px] text-[13.5px] text-accent-strong [&_b]:font-bold"
+      className="mb-5 border border-accent bg-accent-soft px-4 py-[14px] text-[12.5px] leading-[1.75] text-text [&_b]:font-bold"
       role="status"
     >
       {children}

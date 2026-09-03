@@ -11,12 +11,12 @@ export const pantryRecipes: PantryRecipe[] = [
     eatOutPriceAvg: 22000,
     requiredIngredients: [
       { ingredientId: "pork-neck", name: "돼지고기", cost: 4740 },
-      { ingredientId: "kimchi", name: "김치", cost: 3955 },
+      { ingredientId: "kimchi", name: "신김치", cost: 3955 },
       { ingredientId: "tofu", name: "두부", cost: 2180 },
       { ingredientId: "green-onion", name: "대파", cost: 892 },
       { ingredientId: "onion", name: "양파", cost: 438 },
       { ingredientId: "chili-powder", name: "고춧가루", cost: 274 },
-      { ingredientId: "minced-garlic", name: "마늘", cost: 240 },
+      { ingredientId: "minced-garlic", name: "다진마늘", cost: 240 },
       { ingredientId: "soup-soy-sauce", name: "국간장", cost: 135 },
     ],
   },
@@ -25,7 +25,7 @@ export const pantryRecipes: PantryRecipe[] = [
     title: "김치볶음밥",
     eatOutPriceAvg: 9000,
     requiredIngredients: [
-      { ingredientId: "kimchi", name: "김치", cost: 1800 },
+      { ingredientId: "kimchi", name: "신김치", cost: 1800 },
       { ingredientId: "rice", name: "밥", cost: 1400 },
       { ingredientId: "pork-neck", name: "돼지고기", cost: 1500 },
       { ingredientId: "green-onion", name: "대파", cost: 300 },
@@ -43,7 +43,7 @@ export const pantryRecipes: PantryRecipe[] = [
       { ingredientId: "green-onion", name: "대파", cost: 397 },
       { ingredientId: "gochujang", name: "고추장", cost: 520 },
       { ingredientId: "chili-powder", name: "고춧가루", cost: 392 },
-      { ingredientId: "minced-garlic", name: "마늘", cost: 160 },
+      { ingredientId: "minced-garlic", name: "다진마늘", cost: 160 },
     ],
   },
   {
@@ -63,10 +63,10 @@ export const pantryRecipes: PantryRecipe[] = [
     requiredIngredients: [
       { ingredientId: "spam", name: "스팸", cost: 3800 },
       { ingredientId: "sausage", name: "소시지", cost: 2900 },
-      { ingredientId: "kimchi", name: "김치", cost: 2200 },
+      { ingredientId: "kimchi", name: "신김치", cost: 2200 },
       { ingredientId: "onion", name: "양파", cost: 400 },
       { ingredientId: "tofu", name: "두부", cost: 1200 },
-      { ingredientId: "minced-garlic", name: "마늘", cost: 160 },
+      { ingredientId: "minced-garlic", name: "다진마늘", cost: 160 },
       { ingredientId: "gochujang", name: "고추장", cost: 400 },
     ],
   },
@@ -75,11 +75,12 @@ export const pantryRecipes: PantryRecipe[] = [
     title: "된장찌개",
     eatOutPriceAvg: 10000,
     requiredIngredients: [
+      { ingredientId: "doenjang", name: "된장", cost: 420 },
       { ingredientId: "tofu", name: "두부", cost: 1453 },
       { ingredientId: "zucchini", name: "애호박", cost: 800 },
       { ingredientId: "onion", name: "양파", cost: 219 },
       { ingredientId: "green-onion", name: "대파", cost: 298 },
-      { ingredientId: "minced-garlic", name: "마늘", cost: 160 },
+      { ingredientId: "minced-garlic", name: "다진마늘", cost: 160 },
     ],
   },
   {
@@ -87,7 +88,7 @@ export const pantryRecipes: PantryRecipe[] = [
     title: "참치마요덮밥",
     eatOutPriceAvg: 7000,
     requiredIngredients: [
-      { ingredientId: "tuna-can", name: "참치", cost: 2300 },
+      { ingredientId: "tuna-can", name: "참치캔", cost: 2300 },
       { ingredientId: "mayo", name: "마요네즈", cost: 470 },
       { ingredientId: "rice", name: "밥", cost: 1400 },
     ],

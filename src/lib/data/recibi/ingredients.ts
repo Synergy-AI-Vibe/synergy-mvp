@@ -34,15 +34,15 @@ export function findIngredientPrice(id: string): IngredientPriceEntry | undefine
 /** 7-1 추천 칩 12개 고정 */
 export const pantryRecommendedChips: string[] = [
   "돼지고기",
-  "김치",
+  "신김치",
   "두부",
-  "대파",
-  "양파",
   "계란",
   "밥",
+  "대파",
+  "양파",
   "스팸",
-  "소시지",
-  "애호박",
-  "당근",
+  "된장",
   "고추장",
+  "참치캔",
+  "애호박",
 ];

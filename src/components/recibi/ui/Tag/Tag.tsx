@@ -11,11 +11,11 @@ interface TagProps {
 const BASE = "inline-flex items-center text-[11px] leading-[1.3]";
 
 const VARIANT: Record<TagVariant, string> = {
-  source: "bg-canvas px-[7px] py-[2px] font-medium text-text-2",
-  ready: "bg-text px-[7px] py-[2px] font-bold text-on-ink",
-  missing: "bg-canvas px-[7px] py-[2px] font-medium text-text-2",
+  source: "bg-canvas px-2 py-1 font-medium text-text-2",
+  ready: "bg-text px-2 py-[3px] font-medium text-on-ink",
+  missing: "bg-canvas px-2 py-[3px] font-medium text-text-2",
   estimate: "font-normal text-text-2",
-  "no-price": "bg-accent-soft px-[7px] py-[2px] font-bold text-accent-strong",
+  "no-price": "bg-accent-soft px-2 py-1 font-medium text-accent-strong",
 };
 
 export function Tag({ variant = "source", children }: TagProps) {

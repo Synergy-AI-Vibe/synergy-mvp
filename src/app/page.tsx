@@ -1,173 +1,80 @@
-"use client";
+import Link from "next/link";
+import {
+  parseRecipeInputMode,
+  RecipeSearchBar,
+} from "@/components/recibi/search/RecipeSearchBar";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Button } from "@/components/recibi/ui/Button/Button";
-import { ButtonGhost } from "@/components/recibi/ui/ButtonGhost/ButtonGhost";
-import { ModeSwitch, type InputMode } from "@/components/recibi/ui/ModeSwitch/ModeSwitch";
-import { UrlInput } from "@/components/recibi/ui/UrlInput/UrlInput";
-import { RecipeTextarea } from "@/components/recibi/ui/RecipeTextarea/RecipeTextarea";
-import { NoticeCard } from "@/components/recibi/ui/NoticeCard/NoticeCard";
-import { Skeleton } from "@/components/recibi/ui/Skeleton/Skeleton";
-import { TextLink } from "@/components/recibi/ui/TextLink/TextLink";
-import { isYoutubeUrl } from "@/lib/recibi/validate";
-import { extractRecipeFromText, extractRecipeFromUrl } from "@/lib/services/recibi/recipe-service";
-import type { ExtractionResult } from "@/lib/services/recibi/recipe-service";
-
-// h1 홈(링크/직접입력) · h3 형식오류 · c2 계산대기 · h4 추출실패를 한 화면 안의 상태로 다룬다.
+// h1 홈(링크/직접입력) · h3 형식오류 · c2 계산대기 · h4 추출실패는 전부 RecipeSearchBar 안의 상태다.
 // 02_동작규칙 11항: "실제 경로는 네 개면 충분합니다 — 홈(h1 h2 h3)"이므로 라우팅을 나누지 않는다.
-const HERO = "container pt-[clamp(28px,4vw,44px)] pb-[clamp(48px,7vw,80px)]";
-const ACTIONS_ROW = "mt-[14px] flex flex-wrap gap-2.5";
 
-export default function HomePage() {
-  const router = useRouter();
-  const [mode, setMode] = useState<InputMode>("url");
-  const [urlValue, setUrlValue] = useState("");
-  const [textValue, setTextValue] = useState("");
-  const [urlError, setUrlError] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [hasFailed, setHasFailed] = useState(false);
-  const [recoveryText, setRecoveryText] = useState("");
+const LEAD =
+  "유튜브 주소를 넣거나 레시피를 직접 적으면\n재료를 마트 가격으로 계산해 사 먹을 때와 바로 비교해 줍니다.";
 
-  function handleModeChange(next: InputMode) {
-    setMode(next);
-    if (next === "text") setUrlError(false); // 2-1: 직접 입력으로 바꾸면 링크 오류 상태가 해제됨
-  }
+// 이 화면이 곧 빈 상태다 — "계산한 것이 없습니다" 대신 사용법 세 단계로 안내한다 (시안 h1)
+const HOW_IT_WORKS = [
+  {
+    title: "레시피를 넣습니다",
+    body: "유튜브 주소를 붙여 넣거나 레시피를 직접 적어도 됩니다. 인사말과 타임스탬프는 걸러냅니다.",
+  },
+  {
+    title: "재료를 마트 가격으로 계산합니다",
+    body: "'한 줌 · 적당량'은 g·ml로 바꾸고, 이 요리에 실제로 쓰는 양만큼만 값을 매깁니다.",
+  },
+  {
+    title: "사 먹을 때와 비교합니다",
+    body: "매장 가격과 나란히 놓아 이번 한 끼에 얼마가 남는지 알려줍니다.",
+  },
+];
 
-  function handleUrlChange(value: string) {
-    setUrlValue(value);
-    if (urlError) setUrlError(false); // 한 글자라도 고치면 오류 상태 즉시 해제
-  }
-
-  async function goToResult(extractor: () => Promise<ExtractionResult>) {
-    setIsSubmitting(true);
-    const result = await extractor();
-    setIsSubmitting(false);
-    if (result.ok && result.recipe) {
-      router.push(`/result/${result.recipe.id}`);
-      return;
-    }
-    setHasFailed(true);
-  }
-
-  async function handleUrlSubmit() {
-    if (!isYoutubeUrl(urlValue)) {
-      setUrlError(true);
-      return;
-    }
-    setUrlError(false);
-    await goToResult(() => extractRecipeFromUrl(urlValue));
-  }
-
-  async function handleTextSubmit() {
-    if (!textValue.trim()) return; // 02_동작규칙 10-1 미정 — 최소 방어만 둔다
-    await goToResult(() => extractRecipeFromText(textValue));
-  }
-
-  async function handleRecoverySubmit() {
-    if (!recoveryText.trim()) return;
-    await goToResult(() => extractRecipeFromText(recoveryText));
-  }
-
-  function resetToHome() {
-    setMode("url");
-    setUrlValue("");
-    setTextValue("");
-    setUrlError(false);
-    setHasFailed(false);
-    setRecoveryText("");
-  }
-
-  if (hasFailed) {
-    return (
-      <main className="shrink-0 grow basis-auto">
-        <section className={HERO}>
-          <NoticeCard
-            eyebrow="추출 실패"
-            title="영상에서 재료를 찾지 못했습니다"
-            description={
-              "설명란에 재료 목록이 없거나 형식이 달라 읽지 못했습니다.\n재료를 직접 적으면 바로 계산할 수 있습니다."
-            }
-          >
-            <RecipeTextarea
-              placeholder={"재료를 한 줄에 하나씩 적어주세요\n예) 돼지고기 목살 300g"}
-              value={recoveryText}
-              onChange={(event) => setRecoveryText(event.target.value)}
-            />
-            <div className={ACTIONS_ROW}>
-              <Button onClick={handleRecoverySubmit} disabled={isSubmitting || !recoveryText.trim()}>
-                {isSubmitting ? "계산 중" : "직접 입력해서 계산"}
-              </Button>
-              <ButtonGhost onClick={resetToHome} disabled={isSubmitting}>
-                다른 링크 넣기
-              </ButtonGhost>
-            </div>
-          </NoticeCard>
-        </section>
-      </main>
-    );
-  }
+export default async function HomePage({ searchParams }: PageProps<"/">) {
+  const mode = parseRecipeInputMode((await searchParams).mode);
 
   return (
     <main className="shrink-0 grow basis-auto">
-      <section className={HERO}>
-        <h1 className="mb-3 text-[clamp(26px,3.6vw,34px)] leading-[1.3] font-black tracking-[-0.035em]">
-          레시피 하나면
-          <br />
-          얼마 아끼는지 나옵니다
-        </h1>
-        <p className="mb-7 max-w-[52ch] text-sm leading-[1.75] text-text-2">
-          유튜브 레시피 링크를 넣으면 실제 장보기 가격으로 재료비를 계산해, 사 먹을 때와 비교해드립니다.
-        </p>
+      <section className="container pt-[clamp(28px,4vw,44px)]">
+        <div className="pt-8 pb-10">
+          <h1 className="mb-3 text-[clamp(26px,3.6vw,34px)] leading-[1.3] font-black tracking-[-0.035em]">
+            레시피 하나면
+            <br />
+            얼마 아끼는지 나옵니다
+          </h1>
+          <p className="text-sm leading-[1.75] whitespace-pre-line text-text-2">{LEAD}</p>
+        </div>
 
-        <ModeSwitch mode={mode} onChange={handleModeChange} />
+        <RecipeSearchBar mode={mode} />
+      </section>
 
-        {mode === "url" ? (
-          <>
-            <UrlInput
-              value={urlValue}
-              onChange={handleUrlChange}
-              onSubmit={handleUrlSubmit}
-              error={urlError}
-              showYoutubeTag={urlValue.length > 0 && !urlError && isYoutubeUrl(urlValue)}
-            />
-            {urlError && (
-              <p className="mt-2.5 text-xs leading-[1.7] whitespace-pre-line text-accent">
-                {"유튜브 링크 형식이 아닙니다.\nyoutube.com 또는 youtu.be로 시작하는 링크를 넣어주세요."}
-              </p>
-            )}
-            <div className={ACTIONS_ROW}>
-              <Button variant="accent" onClick={handleUrlSubmit} disabled={isSubmitting || urlError}>
-                {isSubmitting ? "계산 중" : "원가 계산"}
-              </Button>
-            </div>
-          </>
-        ) : (
-          <>
-            <RecipeTextarea
-              placeholder={"재료를 한 줄에 하나씩 적어주세요\n예) 돼지고기 목살 300g\n신김치 400g"}
-              value={textValue}
-              onChange={(event) => setTextValue(event.target.value)}
-            />
-            <div className={ACTIONS_ROW}>
-              <Button onClick={handleTextSubmit} disabled={isSubmitting || !textValue.trim()}>
-                {isSubmitting ? "계산 중" : "원가 계산"}
-              </Button>
-            </div>
-          </>
-        )}
+      <section className="container pt-[clamp(38px,5vw,56px)] pb-[clamp(48px,7vw,80px)]">
+        <ol className="border-t border-line-strong">
+          {HOW_IT_WORKS.map((step, index) => (
+            <li key={step.title} className="flex flex-wrap gap-[18px] border-b border-line py-[18px]">
+              <span className="w-[26px] flex-none text-[15px] leading-[1.5] font-black text-accent">
+                {index + 1}
+              </span>
+              <div className="min-w-[200px] flex-1">
+                <p className="text-sm leading-[1.5] font-bold">{step.title}</p>
+                <p className="mt-[3px] text-[12.5px] leading-[1.7] text-text-2">{step.body}</p>
+              </div>
+            </li>
+          ))}
+        </ol>
 
-        {isSubmitting && (
-          <div className="mt-[34px] flex flex-col gap-3" aria-hidden="true">
-            <Skeleton height={64} />
-            <Skeleton height={16} style={{ width: "60%" }} />
-            <Skeleton height={16} style={{ width: "40%" }} />
+        {/* SUB 범위 — 링크가 없는 사람을 재료로 찾기로 보낸다 (시안 h1 하단) */}
+        <div className="pt-[34px]">
+          <div className="mb-[14px] flex flex-wrap items-baseline justify-between gap-4">
+            <h2 className="text-sm leading-[1.4] font-bold tracking-[-0.02em]">링크가 없다면</h2>
+            <Link
+              href="/pantry"
+              className="text-[12.5px] font-bold text-accent hover:text-accent-hover active:text-accent-press"
+            >
+              재료로 찾기
+            </Link>
           </div>
-        )}
-
-        <div className="mt-[34px] border-t border-line pt-[22px]">
-          <span className="mb-1 block text-sm font-bold tracking-[-0.02em] text-text-2">링크가 없다면</span>
-          <TextLink href="/pantry">있는 재료로 레시피 찾기</TextLink>
+          <p className="text-[13px] leading-[1.75] text-text-2">
+            냉장고에 있는 재료를 최대 5개까지 고르면
+            <br />
+            그걸로 만들 수 있는 레시피를 추가로 사야 하는 금액 순으로 보여줍니다.
+          </p>
         </div>
       </section>
     </main>

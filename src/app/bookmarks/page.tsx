@@ -42,18 +42,24 @@ export default function BookmarksPage() {
   return (
     <main className="shrink-0 grow basis-auto">
       <section className="container pt-[clamp(34px,5vw,52px)] pb-[clamp(48px,7vw,80px)]">
-        <div className="mb-[22px] flex items-baseline gap-2">
-          <h1 className="text-[clamp(21px,2.6vw,26px)] font-black tracking-[-0.035em]">북마크</h1>
-          <span
-            className={`text-sm font-bold ${isFull ? "text-accent" : "text-text-2"}`}
-          >
+        <div className="mb-1 flex flex-wrap items-baseline justify-between gap-4">
+          <h1 className="text-[clamp(21px,2.6vw,26px)] leading-[1.3] font-black tracking-[-0.035em]">
+            북마크
+          </h1>
+          <span className={`text-[12.5px] ${isFull ? "text-accent" : "text-text-2"}`}>
             {bookmarks.length} / {RECIBI_BOOKMARK_LIMIT}개
           </span>
         </div>
+        <p className="mb-[22px] text-[13px] leading-[1.7] text-text-2">
+          저장한 레시피는 열 때마다 그날 가격으로 다시 계산합니다.
+          <br />
+          {RECIBI_BOOKMARK_LIMIT}개까지 저장할 수 있습니다.
+        </p>
 
         {isFull && (
           <Banner>
-            <b>북마크가 가득 찼습니다.</b> 하나를 지우고 다시 저장해주세요.
+            북마크가 {RECIBI_BOOKMARK_LIMIT}개로 가득 찼습니다. 새로 저장하려면 아래에서 먼저 지워
+            주세요.
           </Banner>
         )}
 
@@ -89,7 +95,11 @@ export default function BookmarksPage() {
                 />
               ))}
             </ul>
-            <p className="mt-[18px] text-[12.5px] text-text-2">여는 시점의 가격으로 다시 계산한 값입니다.</p>
+            <p className="mt-[18px] max-w-[58ch] text-[12.5px] leading-[1.75] text-text-2">
+              금액은 그 레시피의 재료비 원가입니다.
+              <br />
+              가격이 바뀌면 여는 순간 다시 계산됩니다.
+            </p>
           </>
         )}
       </section>

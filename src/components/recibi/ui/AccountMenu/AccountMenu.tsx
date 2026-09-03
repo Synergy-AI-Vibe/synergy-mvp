@@ -10,7 +10,7 @@ interface AccountMenuProps {
 }
 
 const ITEM =
-  "flex min-h-tap w-full items-center px-[14px] text-left text-[13.5px] hover:bg-canvas focus-visible:outline-offset-[-2px] active:bg-line";
+  "flex min-h-tap w-full items-center border-b border-line px-4 py-[13px] text-left text-[13px] font-medium last:border-b-0 hover:bg-canvas focus-visible:outline-offset-[-2px] active:bg-line";
 
 export function AccountMenu({ name, onLogout, onWithdraw }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
@@ -47,7 +47,7 @@ export function AccountMenu({ name, onLogout, onWithdraw }: AccountMenuProps) {
       </button>
       {open && (
         <div
-          className="absolute top-[26px] right-0 z-10 w-[148px] border border-line bg-surface"
+          className="absolute top-[26px] right-0 z-10 min-w-[148px] border border-line-strong bg-surface"
           role="menu"
         >
           <button
