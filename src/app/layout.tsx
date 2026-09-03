@@ -22,7 +22,7 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
     <html lang="ko" className={`${notoSansKr.variable}`}>
-      <body>
+      <body className="flex min-h-full flex-col bg-surface font-sans text-text tabular-nums antialiased break-keep">
         <RecibiAppProvider>
           <Header />
           {children}

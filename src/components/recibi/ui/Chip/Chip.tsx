@@ -1,5 +1,4 @@
 import { useState, type KeyboardEvent } from "react";
-import styles from "./Chip.module.css";
 
 /** 부품 14 — 칩. 선택됨(×로 제거)과 추천(눌러서 담기) 두 상태 (02_동작규칙 7-1·7-2) */
 interface ChipProps {
@@ -10,14 +9,16 @@ interface ChipProps {
   onRemove?: () => void;
 }
 
+const BASE = "inline-flex min-h-tap items-center gap-2 border px-3 py-2 text-[13.5px] font-medium";
+
 export function Chip({ label, selected, disabled, onClick, onRemove }: ChipProps) {
   if (selected) {
     return (
-      <span className={[styles.chip, styles.selected].join(" ")}>
+      <span className={`${BASE} group border-text bg-text text-on-ink active:bg-ink-press`}>
         {label}
         <button
           type="button"
-          className={styles.mark}
+          className="font-normal text-chip-mark group-hover:text-on-ink hover:text-on-ink"
           onClick={onRemove}
           aria-label={`${label} 빼기`}
         >
@@ -27,7 +28,12 @@ export function Chip({ label, selected, disabled, onClick, onRemove }: ChipProps
     );
   }
   return (
-    <button type="button" className={styles.chip} onClick={onClick} disabled={disabled}>
+    <button
+      type="button"
+      className={`${BASE} border-line text-text enabled:hover:border-text enabled:active:bg-canvas disabled:cursor-not-allowed disabled:text-disabled`}
+      onClick={onClick}
+      disabled={disabled}
+    >
       {label}
     </button>
   );
@@ -59,13 +65,13 @@ export function ChipAddInput({ onAdd, disabled }: ChipAddInputProps) {
   if (disabled) return null;
 
   return (
-    <span className={styles.addForm}>
-      <label className="visually-hidden" htmlFor="pantry-add-input">
+    <span className="inline-flex min-h-tap items-center border border-line pr-1 pl-3">
+      <label className="sr-only" htmlFor="pantry-add-input">
         가진 재료 직접 입력
       </label>
       <input
         id="pantry-add-input"
-        className={styles.addInput}
+        className="w-24 border-none bg-transparent px-1 py-2 text-[13.5px] text-text outline-none placeholder:text-text-3"
         type="text"
         maxLength={10}
         placeholder="직접 입력"

@@ -13,10 +13,12 @@ import { TextLink } from "@/components/recibi/ui/TextLink/TextLink";
 import { isYoutubeUrl } from "@/lib/recibi/validate";
 import { extractRecipeFromText, extractRecipeFromUrl } from "@/lib/services/recibi/recipe-service";
 import type { ExtractionResult } from "@/lib/services/recibi/recipe-service";
-import styles from "./page.module.css";
 
 // h1 홈(링크/직접입력) · h3 형식오류 · c2 계산대기 · h4 추출실패를 한 화면 안의 상태로 다룬다.
 // 02_동작규칙 11항: "실제 경로는 네 개면 충분합니다 — 홈(h1 h2 h3)"이므로 라우팅을 나누지 않는다.
+const HERO = "container pt-[clamp(28px,4vw,44px)] pb-[clamp(48px,7vw,80px)]";
+const ACTIONS_ROW = "mt-[14px] flex flex-wrap gap-2.5";
+
 export default function HomePage() {
   const router = useRouter();
   const [mode, setMode] = useState<InputMode>("url");
@@ -78,8 +80,8 @@ export default function HomePage() {
 
   if (hasFailed) {
     return (
-      <main>
-        <section className={`container ${styles.hero}`}>
+      <main className="shrink-0 grow basis-auto">
+        <section className={HERO}>
           <NoticeCard
             eyebrow="추출 실패"
             title="영상에서 재료를 찾지 못했습니다"
@@ -92,7 +94,7 @@ export default function HomePage() {
               value={recoveryText}
               onChange={(event) => setRecoveryText(event.target.value)}
             />
-            <div className={styles.actionsRow}>
+            <div className={ACTIONS_ROW}>
               <Button onClick={handleRecoverySubmit} disabled={isSubmitting || !recoveryText.trim()}>
                 {isSubmitting ? "계산 중" : "직접 입력해서 계산"}
               </Button>
@@ -107,14 +109,14 @@ export default function HomePage() {
   }
 
   return (
-    <main>
-      <section className={`container ${styles.hero}`}>
-        <h1 className={styles.title}>
+    <main className="shrink-0 grow basis-auto">
+      <section className={HERO}>
+        <h1 className="mb-3 text-[clamp(26px,3.6vw,34px)] leading-[1.3] font-black tracking-[-0.035em]">
           레시피 하나면
           <br />
           얼마 아끼는지 나옵니다
         </h1>
-        <p className={styles.lead}>
+        <p className="mb-7 max-w-[52ch] text-sm leading-[1.75] text-text-2">
           유튜브 레시피 링크를 넣으면 실제 장보기 가격으로 재료비를 계산해, 사 먹을 때와 비교해드립니다.
         </p>
 
@@ -130,11 +132,11 @@ export default function HomePage() {
               showYoutubeTag={urlValue.length > 0 && !urlError && isYoutubeUrl(urlValue)}
             />
             {urlError && (
-              <p className={`${styles.hint} ${styles.hintErr}`}>
+              <p className="mt-2.5 text-xs leading-[1.7] whitespace-pre-line text-accent">
                 {"유튜브 링크 형식이 아닙니다.\nyoutube.com 또는 youtu.be로 시작하는 링크를 넣어주세요."}
               </p>
             )}
-            <div className={styles.actionsRow}>
+            <div className={ACTIONS_ROW}>
               <Button variant="accent" onClick={handleUrlSubmit} disabled={isSubmitting || urlError}>
                 {isSubmitting ? "계산 중" : "원가 계산"}
               </Button>
@@ -147,7 +149,7 @@ export default function HomePage() {
               value={textValue}
               onChange={(event) => setTextValue(event.target.value)}
             />
-            <div className={styles.actionsRow}>
+            <div className={ACTIONS_ROW}>
               <Button onClick={handleTextSubmit} disabled={isSubmitting || !textValue.trim()}>
                 {isSubmitting ? "계산 중" : "원가 계산"}
               </Button>
@@ -156,15 +158,15 @@ export default function HomePage() {
         )}
 
         {isSubmitting && (
-          <div className={styles.skeletonPreview} aria-hidden="true">
+          <div className="mt-[34px] flex flex-col gap-3" aria-hidden="true">
             <Skeleton height={64} />
             <Skeleton height={16} style={{ width: "60%" }} />
             <Skeleton height={16} style={{ width: "40%" }} />
           </div>
         )}
 
-        <div className={styles.pantryLink}>
-          <span className={styles.pantryLinkLabel}>링크가 없다면</span>
+        <div className="mt-[34px] border-t border-line pt-[22px]">
+          <span className="mb-1 block text-sm font-bold tracking-[-0.02em] text-text-2">링크가 없다면</span>
           <TextLink href="/pantry">있는 재료로 레시피 찾기</TextLink>
         </div>
       </section>

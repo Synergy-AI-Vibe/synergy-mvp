@@ -3,7 +3,6 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { createPortal } from "react-dom";
 import { useHasMounted } from "@/context/RecibiAppContext";
-import styles from "./Modal.module.css";
 
 const FOCUSABLE =
   'a[href], button:not([disabled]), input:not([disabled]), textarea:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
@@ -72,23 +71,31 @@ export function Modal({ open, title, onClose, children }: ModalProps) {
 
   return createPortal(
     <div
-      className={styles.overlay}
+      className="fixed inset-0 z-20 flex animate-fade-in items-center justify-center bg-scrim p-gutter"
       onMouseDown={(event) => {
         if (event.target === event.currentTarget) onClose();
       }}
     >
       <div
-        className={styles.panel}
+        className="max-h-full w-full max-w-[420px] overflow-y-auto border border-line-strong bg-surface px-gutter pt-[22px] pb-gutter shadow-toast"
         role="dialog"
         aria-modal="true"
         aria-labelledby={titleId}
         ref={panelRef}
       >
-        <div className={styles.head}>
-          <h2 className={styles.title} id={titleId}>
+        <div className="mb-2 flex items-start justify-between gap-3">
+          <h2
+            className="text-[clamp(19px,2.4vw,22px)] font-black tracking-[-0.035em]"
+            id={titleId}
+          >
             {title}
           </h2>
-          <button type="button" className={styles.close} onClick={onClose} aria-label="닫기">
+          <button
+            type="button"
+            className="-mt-3 -mr-3 flex size-tap flex-none items-center justify-center text-sm text-text-3 hover:text-text active:text-accent"
+            onClick={onClose}
+            aria-label="닫기"
+          >
             ✕
           </button>
         </div>

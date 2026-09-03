@@ -19,9 +19,11 @@ import { CompareBar } from "@/components/recibi/ui/CompareBar/CompareBar";
 import { IngredientRow } from "@/components/recibi/ui/IngredientRow/IngredientRow";
 import { BookmarkButton } from "@/components/recibi/ui/BookmarkButton/BookmarkButton";
 import { Banner } from "@/components/recibi/ui/Banner/Banner";
-import styles from "./page.module.css";
 
 type TabKey = "savings" | "ingredients" | "steps";
+
+const PANEL = "container pt-[clamp(38px,5vw,56px)] pb-[clamp(40px,6vw,72px)]";
+const SECTION_TITLE = "mb-[14px] text-[17px] leading-[1.4] font-black tracking-[-0.02em]";
 
 export default function ResultPage() {
   const params = useParams<{ recipeId: string }>();
@@ -82,13 +84,13 @@ export default function ResultPage() {
   ];
 
   return (
-    <main>
-      <section className={`container ${styles.headSection}`}>
-        <p className={styles.eyebrow}>{recipe.sourceLabel}</p>
-        <div className={styles.titleRow}>
+    <main className="shrink-0 grow basis-auto">
+      <section className="container pt-[clamp(28px,4vw,44px)] pb-7">
+        <p className="mb-[7px] text-[11.5px] font-medium tracking-[0.06em] text-text-2">{recipe.sourceLabel}</p>
+        <div className="flex flex-wrap items-start justify-between gap-4">
           <div>
-            <h1 className={styles.title}>{recipe.title}</h1>
-            <p className={styles.meta}>
+            <h1 className="text-[clamp(22px,2.8vw,28px)] leading-[1.25] font-black tracking-[-0.035em]">{recipe.title}</h1>
+            <p className="mt-1 text-[13px] text-text-2">
               {recipe.servings}인분 · {recipe.cookMinutes}분
             </p>
           </div>
@@ -100,31 +102,31 @@ export default function ResultPage() {
 
       {activeTab === "savings" && (
         <section
-          className={`container ${styles.panel}`}
+          className={PANEL}
           role="tabpanel"
           id="panel-savings"
           aria-labelledby="tab-savings"
         >
-          <div className={styles.saveRow}>
-            <span className={styles.saveNumber}>{savings.amount.toLocaleString("ko-KR")}</span>
-            <span className={styles.saveUnit}>원</span>
-            <span className={styles.saveVerb}>아낍니다</span>
+          <div className="mb-[14px] flex flex-wrap items-baseline gap-1.5">
+            <span className="text-[clamp(52px,8.5vw,84px)] leading-[0.95] font-black tracking-[-0.05em] text-accent">{savings.amount.toLocaleString("ko-KR")}</span>
+            <span className="text-[clamp(22px,3vw,30px)] font-black tracking-[-0.03em] text-accent">원</span>
+            <span className="ml-1.5 text-[clamp(18px,2.4vw,24px)] font-bold tracking-[-0.02em]">아낍니다</span>
           </div>
-          <p className={styles.saveSummary}>
+          <p className="mb-[30px] text-sm leading-[1.75] text-text-2">
             사 먹으면 {formatWon(recipe.eatOutPrice.avg)}, 해먹으면 {formatWon(totals.costTotal)} ·{" "}
             {formatPercent(savings.percent)} 절약
           </p>
 
           <CompareBar eatOutAvg={recipe.eatOutPrice.avg} ingredientTotal={totals.costTotal} fillPercent={barFillPercent} />
 
-          <div className={styles.splitRow}>
+          <div className="flex flex-wrap items-baseline justify-between gap-4 py-4 text-[13px] text-text-2 [&_b]:font-bold [&_b]:text-text">
             <span>1인분 기준</span>
             <span>
               {formatWon(eatOutPerServing)} → <b>{formatWon(myPerServing)}</b>
             </span>
           </div>
 
-          <p className={styles.caption}>
+          <p className="mt-[18px] text-[12.5px] leading-[1.75] text-text-2">
             {recipe.priceUpdatedAt} 기준 · 사 먹는 가격 {formatWon(recipe.eatOutPrice.min)}~{formatWon(recipe.eatOutPrice.max)} 범위의
             평균값입니다.
           </p>
@@ -133,12 +135,12 @@ export default function ResultPage() {
 
       {activeTab === "ingredients" && (
         <section
-          className={`container ${styles.panel}`}
+          className={PANEL}
           role="tabpanel"
           id="panel-ingredients"
           aria-labelledby="tab-ingredients"
         >
-          <h2 className={styles.sectionTitle}>재료별 금액</h2>
+          <h2 className={SECTION_TITLE}>재료별 금액</h2>
 
           {hasUnpricedBanner && (
             <Banner>
@@ -146,7 +148,7 @@ export default function ResultPage() {
             </Banner>
           )}
 
-          <ul className={styles.ingredientList}>
+          <ul className="border-t border-line-strong">
             {recipe.ingredients.map((ingredient) => (
               <IngredientRow
                 key={ingredient.id}
@@ -159,18 +161,18 @@ export default function ResultPage() {
             ))}
           </ul>
 
-          <div className={styles.totalRow}>
-            <span className={styles.totalLabel}>재료비 합계</span>
-            <span className={styles.totalValue}>{formatWon(totals.costTotal)}</span>
+          <div className="mt-1 flex items-baseline justify-between border-t-2 border-line-strong pt-5">
+            <span className="text-sm font-bold">재료비 합계</span>
+            <span className="text-[22px] font-black">{formatWon(totals.costTotal)}</span>
           </div>
-          {exclusionMessage && <p className={styles.exclusionNote}>{exclusionMessage}</p>}
+          {exclusionMessage && <p className="mt-3 text-[13px] text-text-2">{exclusionMessage}</p>}
 
-          <p className={styles.cartNote}>
+          <p className="mt-[22px] text-[13.5px] leading-[1.8] text-text-2 [&_b]:font-bold [&_b]:text-text">
             실제로 구매하려면 장바구니 기준 최소 <b>{formatWon(totals.cartTotal)}</b>이 필요합니다. 구매 단위 전체
             가격의 합이며, 실제 결제 기능은 없습니다.
           </p>
 
-          <p className={styles.footNote}>
+          <p className="mt-[18px] max-w-[58ch] text-[12.5px] leading-[1.75] text-text-2 [&_b]:font-bold [&_b]:text-text">
             이 범위의 평균값 <b>{formatWon(recipe.eatOutPrice.avg)}</b>을 비교 기준으로 씁니다. 배달비{" "}
             {formatWon(recipe.eatOutPrice.deliveryFee)} 포함.
           </p>
@@ -178,32 +180,32 @@ export default function ResultPage() {
       )}
 
       {activeTab === "steps" && (
-        <section className={`container ${styles.panel}`} role="tabpanel" id="panel-steps" aria-labelledby="tab-steps">
-          <h2 className={styles.sectionTitle}>조리법</h2>
+        <section className={PANEL} role="tabpanel" id="panel-steps" aria-labelledby="tab-steps">
+          <h2 className={SECTION_TITLE}>조리법</h2>
 
           {recipe.steps ? (
-            <ol className={styles.stepList}>
+            <ol className="border-t border-line">
               {recipe.steps.map((step) => (
-                <li key={step.order} className={styles.step}>
-                  <span className={styles.stepNumber}>{step.order}</span>
-                  <div className={styles.stepBody}>
-                    <p className={styles.stepTitle}>
+                <li key={step.order} className="flex gap-4 border-b border-line py-[18px]">
+                  <span className="w-[26px] flex-none text-sm font-black text-accent">{step.order}</span>
+                  <div className="min-w-0 flex-1">
+                    <p className="mb-1 flex items-baseline gap-2 text-sm font-bold">
                       {step.title}
-                      {step.minutes && <span className={styles.stepMinutes}>{step.minutes}분</span>}
+                      {step.minutes && <span className="text-xs font-normal text-text-2">{step.minutes}분</span>}
                     </p>
-                    <p className={styles.stepText}>{step.body}</p>
+                    <p className="text-sm leading-[1.75] text-text-2">{step.body}</p>
                   </div>
                 </li>
               ))}
             </ol>
           ) : (
-            <p className={styles.emptySteps}>이 레시피는 조리 순서가 정리되어 있지 않습니다.</p>
+            <p className="text-[13.5px] text-text-2">이 레시피는 조리 순서가 정리되어 있지 않습니다.</p>
           )}
 
           {recipe.rawDescription && (
-            <details className={styles.rawDetails}>
-              <summary className={styles.rawSummary}>설명란 원문 보기</summary>
-              <pre className={styles.rawText}>{recipe.rawDescription}</pre>
+            <details className="mt-7 border-t border-line pt-[22px]">
+              <summary className="flex min-h-tap cursor-pointer items-center text-[13.5px] font-medium text-text-2 hover:text-text">설명란 원문 보기</summary>
+              <pre className="mt-[14px] font-sans text-[13.5px] leading-[1.9] whitespace-pre-line text-text-2">{recipe.rawDescription}</pre>
             </details>
           )}
         </section>

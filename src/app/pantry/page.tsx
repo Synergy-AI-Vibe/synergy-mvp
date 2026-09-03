@@ -14,9 +14,11 @@ import { Tag } from "@/components/recibi/ui/Tag/Tag";
 import { NoticeCard } from "@/components/recibi/ui/NoticeCard/NoticeCard";
 import { Skeleton } from "@/components/recibi/ui/Skeleton/Skeleton";
 import type { ChosenPantryIngredient, PantryMatch } from "@/types/recibi";
-import styles from "./page.module.css";
 
 const PANTRY_LIMIT = 5;
+
+const RESULT_SECTION = "container pb-[clamp(48px,7vw,80px)]";
+const LABEL = "mb-2.5 text-sm font-bold";
 
 // p1 시작 · p2 결과 · p3 결과 없음 · p4 5개 가득 — 전부 이 화면의 상태다 (02_동작규칙 7항, SUB)
 export default function PantryPage() {
@@ -62,15 +64,15 @@ export default function PantryPage() {
   }
 
   return (
-    <main>
-      <section className={`container ${styles.section}`}>
-        <h1 className={styles.title}>있는 재료로 찾기</h1>
-        <p className={styles.lead}>지금 집에 있는 재료를 골라주세요. 겹치는 재료가 많은 레시피부터 보여드립니다.</p>
+    <main className="shrink-0 grow basis-auto">
+      <section className="container pt-[clamp(34px,5vw,52px)]">
+        <h1 className="mb-2 text-[clamp(21px,2.6vw,26px)] font-black tracking-[-0.035em]">있는 재료로 찾기</h1>
+        <p className="mb-[22px] max-w-[52ch] text-sm leading-[1.75] text-text-2">지금 집에 있는 재료를 골라주세요. 겹치는 재료가 많은 레시피부터 보여드립니다.</p>
 
-        <p className={styles.chosenLabel}>고른 재료 ({chosen.length}/{PANTRY_LIMIT})</p>
-        <div className={styles.chosenRow}>
+        <p className={LABEL}>고른 재료 ({chosen.length}/{PANTRY_LIMIT})</p>
+        <div className="mb-[22px] flex min-h-tap flex-wrap gap-2">
           {chosen.length === 0 ? (
-            <span className={styles.emptyChosen}>아직 고른 재료가 없습니다.</span>
+            <span className="flex items-center text-[13px] text-text-3">아직 고른 재료가 없습니다.</span>
           ) : (
             chosen.map((item) => (
               <Chip key={item.id} label={item.label} selected onRemove={() => removeIngredient(item.id)} />
@@ -78,19 +80,19 @@ export default function PantryPage() {
           )}
         </div>
 
-        <p className={styles.recommendLabel}>추천 재료</p>
-        <div className={styles.recommendRow}>
+        <p className={LABEL}>추천 재료</p>
+        <div className="mb-2.5 flex flex-wrap items-center gap-2">
           {pantryRecommendedChips
             .filter((label) => !chosenLabels.has(label.toLowerCase()))
             .map((label) => (
               <Chip key={label} label={label} disabled={isFull} onClick={() => addIngredient(label)} />
             ))}
           <ChipAddInput disabled={isFull} onAdd={(value) => addIngredient(value)} />
-          {isFull && <span className={styles.limitHint}>5개까지 고를 수 있습니다</span>}
+          {isFull && <span className="text-xs font-medium text-accent">5개까지 고를 수 있습니다</span>}
         </div>
-        {duplicateHint && <p className={styles.duplicateHint}>{duplicateHint}</p>}
+        {duplicateHint && <p className="mb-2.5 text-xs text-accent">{duplicateHint}</p>}
 
-        <div className={styles.actionsRow}>
+        <div className="mt-[22px] mb-[clamp(38px,5vw,56px)]">
           <Button onClick={handleSearch} disabled={chosen.length === 0 || isSearching}>
             {isSearching ? "찾는 중" : "레시피 찾기"}
           </Button>
@@ -98,8 +100,8 @@ export default function PantryPage() {
       </section>
 
       {isSearching && (
-        <section className={`container ${styles.resultSection}`}>
-          <div className={styles.skeletonList} aria-hidden="true">
+        <section className={RESULT_SECTION}>
+          <div className="flex flex-col gap-3" aria-hidden="true">
             <Skeleton height={64} />
             <Skeleton height={64} />
             <Skeleton height={64} />
@@ -108,7 +110,7 @@ export default function PantryPage() {
       )}
 
       {!isSearching && results !== null && results.length === 0 && (
-        <section className={`container ${styles.resultSection}`}>
+        <section className={RESULT_SECTION}>
           <NoticeCard
             eyebrow="결과 없음"
             title="만들 수 있는 레시피를 찾지 못했습니다"
@@ -121,9 +123,9 @@ export default function PantryPage() {
       )}
 
       {!isSearching && results !== null && results.length > 0 && (
-        <section className={`container ${styles.resultSection}`}>
-          <h2 className={styles.resultTitle}>만들 수 있는 레시피</h2>
-          <ul className={styles.list}>
+        <section className={RESULT_SECTION}>
+          <h2 className="mb-[14px] text-[17px] font-black tracking-[-0.02em]">만들 수 있는 레시피</h2>
+          <ul className="border-t border-line-strong">
             {results.map((match) => (
               <ListRow
                 key={match.recipe.id}
@@ -134,11 +136,11 @@ export default function PantryPage() {
                     : `사야 할 재료 ${match.missing.map((m) => m.name).join(", ")}`
                 }
                 trailing={
-                  <span className={styles.rowRight}>
+                  <span className="text-right">
                     <Tag variant={match.missing.length === 0 ? "ready" : "missing"}>
                       {match.missing.length === 0 ? "지금 바로 가능" : `부족 ${match.missing.length}개`}
                     </Tag>
-                    <div className={styles.rowDesc}>
+                    <div className="text-xs text-text-2">
                       {match.missing.length === 0 ? "추가 구매 없음" : `+${formatWon(match.extraCost)}`}
                     </div>
                   </span>
