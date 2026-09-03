@@ -5,7 +5,6 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { computeTotals, computeWarnings, formatPercent, formatWon } from "@/lib/calc";
 import { setCurrentAnalysis, useCurrentAnalysis } from "@/lib/current-analysis";
 import { useHasMounted } from "@/lib/use-has-mounted";
-import { parseRecipeInputMode } from "@/lib/recibi/search-mode";
 import { useRecibiApp } from "@/context/RecibiAppContext";
 import { RecipeSearchBar } from "@/components/recibi/search/RecipeSearchBar";
 import { TabBar, type TabItem } from "@/components/recibi/ui/TabBar/TabBar";
@@ -56,7 +55,6 @@ function buildAdjustmentNote(ingredients: ApiIngredientRow[]): string | null {
 
 function ResultView({ data }: { data: AnalyzeData }) {
   const router = useRouter();
-  const searchParams = useSearchParams();
   const { isLoggedIn, bookmarks, addBookmark, removeBookmark, openLoginModal } = useRecibiApp();
 
   const [activeTab, setActiveTab] = useState<TabKey>("savings"); // 재진입 시 항상 "절약 금액"
@@ -129,7 +127,7 @@ function ResultView({ data }: { data: AnalyzeData }) {
     <>
       {/* 결과를 보는 중에도 넣은 링크는 홈과 같은 자리(최상단)에 그대로 남는다 */}
       <section className="container pt-[clamp(28px,4vw,44px)] pb-[clamp(30px,4vw,44px)]">
-        <RecipeSearchBar mode={parseRecipeInputMode(searchParams.get("mode") ?? undefined)} />
+        <RecipeSearchBar />
       </section>
 
       <section className="container pt-[clamp(26px,3.5vw,38px)] pb-7">
