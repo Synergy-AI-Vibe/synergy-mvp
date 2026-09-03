@@ -1,7 +1,6 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import styles from "./AccountMenu.module.css";
 
 /** 부품 18 — 계정 메뉴. Esc·바깥 클릭으로 닫힘 (02_동작규칙 6-2, 바깥 클릭은 문서에 없는 접근성 추가사항) */
 interface AccountMenuProps {
@@ -9,6 +8,9 @@ interface AccountMenuProps {
   onLogout: () => void;
   onWithdraw: () => void;
 }
+
+const ITEM =
+  "flex min-h-tap w-full items-center border-b border-line px-4 py-[13px] text-left text-[13px] font-medium last:border-b-0 hover:bg-canvas focus-visible:outline-offset-[-2px] active:bg-line";
 
 export function AccountMenu({ name, onLogout, onWithdraw }: AccountMenuProps) {
   const [open, setOpen] = useState(false);
@@ -33,10 +35,10 @@ export function AccountMenu({ name, onLogout, onWithdraw }: AccountMenuProps) {
   }, [open]);
 
   return (
-    <div className={styles.wrap} ref={wrapRef}>
+    <div className="relative" ref={wrapRef}>
       <button
         type="button"
-        className={styles.trigger}
+        className="min-h-tap px-0.5 text-[13px] font-bold text-text"
         aria-haspopup="menu"
         aria-expanded={open}
         onClick={() => setOpen((prev) => !prev)}
@@ -44,11 +46,14 @@ export function AccountMenu({ name, onLogout, onWithdraw }: AccountMenuProps) {
         {name}
       </button>
       {open && (
-        <div className={styles.menu} role="menu">
+        <div
+          className="absolute top-[26px] right-0 z-10 min-w-[148px] border border-line-strong bg-surface"
+          role="menu"
+        >
           <button
             type="button"
             role="menuitem"
-            className={styles.item}
+            className={`${ITEM} text-text`}
             onClick={() => {
               setOpen(false);
               onLogout();
@@ -59,7 +64,7 @@ export function AccountMenu({ name, onLogout, onWithdraw }: AccountMenuProps) {
           <button
             type="button"
             role="menuitem"
-            className={`${styles.item} ${styles.danger}`}
+            className={`${ITEM} text-accent`}
             onClick={() => {
               setOpen(false);
               onWithdraw();

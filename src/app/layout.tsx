@@ -6,6 +6,8 @@ import { Toast } from "@/components/recibi/ui/Toast/Toast";
 import { ToastFromQuery } from "@/components/recibi/ToastFromQuery";
 import { Header } from "@/components/recibi/layout/Header";
 import { Footer } from "@/components/recibi/layout/Footer";
+import { LoginModal } from "@/components/recibi/auth/LoginModal";
+import { WithdrawModal } from "@/components/recibi/auth/WithdrawModal";
 import { createClient } from "@/lib/supabase/server";
 import "./globals.css";
 
@@ -38,7 +40,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
 
   return (
     <html lang="ko" className={`${notoSansKr.variable}`}>
-      <body>
+      <body className="flex min-h-full flex-col bg-surface font-sans text-text tabular-nums antialiased break-keep">
         <RecibiAppProvider initialUser={initialUser}>
           <Suspense fallback={null}>
             <ToastFromQuery />
@@ -46,6 +48,11 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
           <Header />
           {children}
           <Footer />
+          {/* 로그인·탈퇴는 화면 이동 없이 모달로 뜬다 — 어디서 눌러도 보던 자리를 유지한다 */}
+          <Suspense fallback={null}>
+            <LoginModal />
+          </Suspense>
+          <WithdrawModal />
           <Toast />
         </RecibiAppProvider>
       </body>

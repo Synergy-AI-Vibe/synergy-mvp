@@ -11,6 +11,7 @@ import type { ToastMessage } from "@/types/recibi";
 const TOAST_MESSAGES: Record<string, ToastMessage> = {
   login: "카카오 계정으로 로그인했습니다.",
   logout: "로그아웃되었습니다.",
+  login_failed: "카카오 인증에 실패했습니다. 다시 시도해 주세요.",
 };
 
 export function ToastFromQuery() {
