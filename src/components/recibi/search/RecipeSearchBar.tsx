@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { usePathname, useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { useRecibiApp } from "@/context/RecibiAppContext";
 import { ModeSwitch } from "@/components/recibi/ui/ModeSwitch/ModeSwitch";
 import { UrlInput } from "@/components/recibi/ui/UrlInput/UrlInput";
@@ -36,23 +36,20 @@ interface FailureInfo {
   description: string;
 }
 
-interface RecipeSearchBarProps {
-  /** 지금 열려 있는 입력 모드. 주소의 ?mode= 를 페이지가 읽어 넘긴다 */
-  mode: RecipeInputMode;
-}
-
 /**
  * h1 링크 입력 · h2 직접 입력 · h3 형식오류 · c2 계산 대기 · h4 추출실패를 한 덩어리로 묶은 검색부.
  * 홈과 결과 화면 최상단에 같은 모습으로 놓인다 — 결과를 보는 중에도 넣은 링크가 그 자리에 남아야 한다.
  *
- * 입력 모드는 주소(?mode=)에 둔다. 직접 입력 화면을 그대로 링크로 걸 수 있고 새로고침해도 살아남는다.
  * 적어 둔 값은 Context에 두어 화면을 옮겨도 유지되고, 오류·대기·실패는 이 화면의 상태라 여기 로컬로 둔다.
  */
-export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
+export function RecipeSearchBar() {
   const router = useRouter();
-  const pathname = usePathname();
-  const searchParams = useSearchParams();
   const { search, setSearch } = useRecibiApp();
+  // 입력 모드는 이 화면의 상태다 — 주소에 두지 않는다.
+  // 이 앱은 루트 레이아웃이 쿠키를 읽어 모든 경로가 동적이라, 주소를 건드리면 탭을 누를 때마다
+  // 서버 왕복이 생겨 전환이 눈에 띄게 느려진다(실측 prod 245ms · dev 1s). 탭은 라우팅이 아니라
+  // 화면 상태라는 02_동작규칙 11항과도 맞고, 결과 화면의 세 탭도 같은 방식이다.
+  const [mode, setMode] = useState<RecipeInputMode>("url");
   const [urlError, setUrlError] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [failure, setFailure] = useState<FailureInfo | null>(null);
@@ -60,19 +57,14 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
 
   const { url, text } = search;
 
-  /** 모드 전환은 주소만 바꾼다. 히스토리를 더럽히지 않도록 replace, 스크롤도 그대로 둔다 */
-  function goToMode(next: RecipeInputMode) {
-    const params = new URLSearchParams(searchParams);
-    if (next === "url") params.delete("mode");
-    else params.set("mode", next);
-    const query = params.toString();
-    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false });
-  }
-
+  /** 탭을 바꾸면 적어 둔 값과 그에 딸린 오류·실패를 모두 비운다 — 새 입력으로 시작한다 */
   function handleModeChange(next: RecipeInputMode) {
     if (next === mode) return;
-    goToMode(next);
-    if (next === "text") setUrlError(false); // 2-1: 직접 입력으로 바꾸면 링크 오류 상태가 해제됨
+    setMode(next);
+    setSearch({ url: "", text: "" });
+    setUrlError(false); // 2-1: 직접 입력으로 바꾸면 링크 오류 상태가 해제됨
+    setFailure(null);
+    setRecoveryText("");
   }
 
   function handleUrlChange(value: string) {
@@ -167,7 +159,7 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
     setUrlError(false);
     setFailure(null);
     setRecoveryText("");
-    goToMode("url");
+    setMode("url");
   }
 
   return (
@@ -182,7 +174,6 @@ export function RecipeSearchBar({ mode }: RecipeSearchBarProps) {
             onSubmit={handleUrlSubmit}
             error={urlError}
             placeholder={URL_PLACEHOLDER}
-            showYoutubeTag={url.length > 0 && !urlError && isYoutubeUrl(url)}
             onClear={clearUrl}
             action={
               <Button variant="accent" onClick={handleUrlSubmit} disabled={isSubmitting || urlError}>

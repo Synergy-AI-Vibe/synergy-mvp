@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { RecipeSearchBar } from "@/components/recibi/search/RecipeSearchBar";
-import { parseRecipeInputMode } from "@/lib/recibi/search-mode";
 
 // h1 홈(링크/직접입력) · h3 형식오류 · c2 계산대기 · h4 추출실패는 전부 RecipeSearchBar 안의 상태다.
 // 02_동작규칙 11항: "실제 경로는 네 개면 충분합니다 — 홈(h1 h2 h3)"이므로 라우팅을 나누지 않는다.
@@ -24,8 +23,7 @@ const HOW_IT_WORKS = [
   },
 ];
 
-export default async function HomePage({ searchParams }: PageProps<"/">) {
-  const mode = parseRecipeInputMode((await searchParams).mode);
+export default function HomePage() {
 
   return (
     <main className="shrink-0 grow basis-auto">
@@ -39,7 +37,7 @@ export default async function HomePage({ searchParams }: PageProps<"/">) {
           <p className="text-sm leading-[1.75] whitespace-pre-line text-text-2">{LEAD}</p>
         </div>
 
-        <RecipeSearchBar mode={mode} />
+        <RecipeSearchBar />
       </section>
 
       <section className="container pt-[clamp(38px,5vw,56px)] pb-[clamp(48px,7vw,80px)]">

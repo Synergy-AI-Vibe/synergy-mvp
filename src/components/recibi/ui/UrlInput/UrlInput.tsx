@@ -1,13 +1,12 @@
 import type { ReactNode } from "react";
 
-/** 부품 10 — URL 입력창. YOUTUBE 라벨은 값이 있고, 오류가 아니고, 형식을 통과할 때만 보인다 (02_동작규칙 2-2).
+/** 부품 10 — URL 입력창.
  * action은 테두리 안 오른쪽에 붙는 실행 버튼 — 입력과 계산이 한 덩어리로 보여야 한다. */
 interface UrlInputProps {
   value: string;
   onChange: (value: string) => void;
   onSubmit: () => void;
   error?: boolean;
-  showYoutubeTag?: boolean;
   disabled?: boolean;
   placeholder?: string;
   action?: ReactNode;
@@ -23,7 +22,6 @@ export function UrlInput({
   onChange,
   onSubmit,
   error,
-  showYoutubeTag,
   disabled,
   placeholder,
   action,
@@ -39,11 +37,6 @@ export function UrlInput({
 
   return (
     <div className={wrapClass}>
-      {showYoutubeTag && (
-        <span className="self-center text-[11px] font-medium tracking-[0.06em] whitespace-nowrap text-text-2">
-          YOUTUBE
-        </span>
-      )}
       <label className="sr-only" htmlFor="recipe-url-input">
         유튜브 영상 링크
       </label>
