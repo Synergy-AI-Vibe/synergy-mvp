@@ -577,6 +577,206 @@ export default {
       "category": "무시",
       "sourceTier": 0,
       "sourceName": "수돗물/정수 — 비용 0원 처리"
+    },
+    "부침가루": {
+      "per": "g",
+      "unitPrice": 3.38,
+      "pack": { "size": 1000, "unit": "g", "price": 3380, "label": "1kg 봉" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (백설 1kg)"
+    },
+    "즉석밥": {
+      "per": "g",
+      "unitPrice": 4.57,
+      "pack": { "size": 2520, "unit": "g", "price": 11520, "label": "210g×12입" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "다나와 최저가 조사 2026-09-03 (햇반 210g×12)"
+    },
+    "스팸": {
+      "per": "g",
+      "unitPrice": 16,
+      "pack": { "size": 200, "unit": "g", "price": 3200, "label": "200g 캔" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "쿠팡 조사 2026-09-03 (클래식 8캔 25,600원 환산)"
+    },
+    "사골육수": {
+      "per": "ml",
+      "unitPrice": 1.96,
+      "pack": { "size": 500, "unit": "ml", "price": 980, "label": "500ml 팩" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (노브랜드 500g)"
+    },
+    "들깨가루": {
+      "per": "g",
+      "unitPrice": 37,
+      "pack": { "size": 200, "unit": "g", "price": 7400, "label": "200g(탈피)" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (해가원 200g)"
+    },
+    "소주": {
+      "per": "ml",
+      "unitPrice": 3.69,
+      "pack": { "size": 360, "unit": "ml", "price": 1330, "label": "360ml 병" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트 소매가 (2024-01 확인, 최신 재조사 권장)"
+    },
+    "레몬": {
+      "per": "g",
+      "unitPrice": 11.8,
+      "pack": { "size": 100, "unit": "g", "price": 1180, "label": "1개(약 100g)" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (미국산 낱개)"
+    },
+    "밀가루": {
+      "per": "g",
+      "unitPrice": 1.71,
+      "pack": { "size": 1000, "unit": "g", "price": 1710, "label": "1kg (중력분)" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (백설 중력 1kg)"
+    },
+    "전분": {
+      "per": "g",
+      "unitPrice": 5.5,
+      "pack": { "size": 500, "unit": "g", "price": 2750, "label": "500g" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "SSG 조사 2026-09-03 (혼합 감자전분 500g)"
+    },
+    "튀김가루": {
+      "per": "g",
+      "unitPrice": 3.4,
+      "pack": { "size": 1000, "unit": "g", "price": 3400, "label": "1kg" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (오뚜기 1kg)"
+    },
+    "빵가루": {
+      "per": "g",
+      "unitPrice": 7.36,
+      "pack": { "size": 500, "unit": "g", "price": 3680, "label": "500g" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (오뚜기 500g)"
+    },
+    "마요네즈": {
+      "per": "g",
+      "unitPrice": 13.16,
+      "pack": { "size": 500, "unit": "g", "price": 6580, "label": "500g" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (오뚜기 골드 500g)"
+    },
+    "식초": {
+      "per": "ml",
+      "unitPrice": 1.89,
+      "pack": { "size": 900, "unit": "ml", "price": 1700, "label": "900ml" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (오뚜기 양조식초 900ml)"
+    },
+    "올리브유": {
+      "per": "ml",
+      "unitPrice": 22.96,
+      "pack": { "size": 500, "unit": "ml", "price": 11480, "label": "500ml" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (올리브오일 500ml)"
+    },
+    "꿀": {
+      "per": "g",
+      "unitPrice": 28,
+      "pack": { "size": 600, "unit": "g", "price": 16800, "label": "600g (아카시아)" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (그린푸드 아카시아 600g)"
+    },
+    "우유": {
+      "per": "ml",
+      "unitPrice": 4.76,
+      "pack": { "size": 1000, "unit": "ml", "price": 4760, "label": "1L" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "조사 2026-09-03 (서울우유 1L)"
+    },
+    "생크림": {
+      "per": "ml",
+      "unitPrice": 11.92,
+      "pack": { "size": 500, "unit": "ml", "price": 5960, "label": "500ml" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "다나와 조사 2026-09-03 (서울우유 500ml)"
+    },
+    "모짜렐라치즈": {
+      "per": "g",
+      "unitPrice": 17.98,
+      "pack": { "size": 1000, "unit": "g", "price": 17980, "label": "1kg (슈레드)" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (서울우유 슈레드 1kg)"
+    },
+    "슬라이스치즈": {
+      "per": "g",
+      "unitPrice": 24.94,
+      "pack": { "size": 360, "unit": "g", "price": 8980, "label": "20매(360g)" },
+      "category": "조미료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (동원 체다 360g)"
+    },
+    "참치캔": {
+      "per": "g",
+      "unitPrice": 18.33,
+      "pack": { "size": 150, "unit": "g", "price": 2749, "label": "150g 캔" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "SSG 조사 2026-09-03 (동원 10캔 27,490원 환산)"
+    },
+    "파스타면": {
+      "per": "g",
+      "unitPrice": 3.8,
+      "pack": { "size": 500, "unit": "g", "price": 1900, "label": "500g" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "11번가 조사 2026-09-03 (오뚜기 스파게티면 500g)"
+    },
+    "소면": {
+      "per": "g",
+      "unitPrice": 10.53,
+      "pack": { "size": 900, "unit": "g", "price": 9476, "label": "900g" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (오뚜기 옛날국수 900g — 타 판매처 대비 높은 편, 재확인 권장)"
+    },
+    "만두": {
+      "per": "g",
+      "unitPrice": 10.46,
+      "pack": { "size": 1050, "unit": "g", "price": 10980, "label": "1.05kg (왕교자)" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "CJ더마켓 조사 2026-09-03 (비비고 왕교자 정상가)"
+    },
+    "라면사리": {
+      "per": "g",
+      "unitPrice": 3.75,
+      "pack": { "size": 550, "unit": "g", "price": 2060, "label": "110g×5개" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (오뚜기 5입)"
+    },
+    "베이컨": {
+      "per": "g",
+      "unitPrice": 24.92,
+      "pack": { "size": 240, "unit": "g", "price": 5980, "label": "120g×2" },
+      "category": "주재료",
+      "sourceTier": 2,
+      "sourceName": "이마트몰 조사 2026-09-03 (대림 브런치베이컨 240g)"
     }
   }
 };

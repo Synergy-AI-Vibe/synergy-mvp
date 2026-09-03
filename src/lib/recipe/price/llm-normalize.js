@@ -11,10 +11,11 @@ const SYSTEM = `당신은 한국어 레시피의 재료 표기를 표준 품목�
 규칙:
 - 반드시 주어진 표준 품목 목록에 있는 이름 하나로만 답하거나, 해당 없으면 null 을 반환합니다.
 - 목록에 없는 이름을 새로 만들어내지 마세요.
-- 다음은 재료가 아니므로 반드시 null 입니다:
-  · 조리도구·계량 표현 (밥숟가락, 종이컵, 큰 술, 1C, 계량컵)
+- 다음은 재료가 아니므로 반드시 canonical null + isIngredient false 입니다:
+  · 조리도구·계량 표현 (밥숟가락, 종이컵, 큰 술, 1C, 계량컵, 비닐장갑)
   · 조리 단계나 문장 조각 (재료 준비, 색 비율로 적당히, 한 팩이 소포장으로…)
   · 가격·후기 문장
+- 반대로, 목록에 없을 뿐인 진짜 식재료(예: 꽃게, 월계수잎)는 canonical null 이어도 isIngredient true 입니다.
 - 브랜드명이 붙어 있으면 떼고 판단합니다. (예: "오뚜기 참기름" → 참기름)
 - 가공 상태 수식어는 무시합니다. (예: "삶은 계란" → 달걀, "자른 미역" → 마른미역)
 - 애매하면 억지로 붙이지 말고 null 을 선택하세요. 틀린 매핑은 없는 것보다 나쁩니다.
@@ -30,10 +31,14 @@ const SCHEMA = {
         properties: {
           input: { type: 'STRING', description: '입력으로 준 재료 표기 그대로' },
           canonical: { type: 'STRING', nullable: true, description: '표준 품목명 또는 null' },
+          isIngredient: {
+            type: 'BOOLEAN',
+            description: '실제 식재료면 true. 조리도구·계량 표현·조리 단계·문장 조각이면 false',
+          },
           confidence: { type: 'NUMBER', description: '0~1' },
           reason: { type: 'STRING', description: '한 문장 근거' },
         },
-        required: ['input', 'canonical', 'confidence'],
+        required: ['input', 'canonical', 'isIngredient', 'confidence'],
       },
     },
   },
@@ -77,6 +82,8 @@ export async function normalizeNames(
       if (canonical && Number(m.confidence) < minConfidence) canonical = null;
       results.set(m.input, {
         canonical: canonical || null,
+        // 명시적으로 false 일 때만 비재료 취급 (필드 누락 시 재료로 간주 — 실수로 숨기지 않기)
+        isIngredient: m.isIngredient !== false,
         confidence: Number(m.confidence) || 0,
         reason: m.reason || '',
         raw: m.canonical ?? null,

@@ -6,8 +6,31 @@ import '../env.js'; // .env 의 GEMINI_API_KEY 를 process.env 로 올린다
 
 const BASE = 'https://generativelanguage.googleapis.com/v1beta';
 
+// 키 풀: GEMINI_API_KEYS(쉼표 구분, 공백 없이)가 있으면 그걸 쓰고,
+// 한 키가 할당량(429)에 걸리면 rotateApiKey() 로 다음 키로 넘어간다.
+// 단일 GEMINI_API_KEY / GOOGLE_API_KEY 도 그대로 동작한다.
+let keyIndex = 0;
+
+function keyPool() {
+  const multi = process.env.GEMINI_API_KEYS;
+  if (multi) return multi.split(',').map((s) => s.trim()).filter(Boolean);
+  const single = process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY;
+  return single ? [single] : [];
+}
+
 export function apiKey() {
-  return process.env.GEMINI_API_KEY || process.env.GOOGLE_API_KEY || null;
+  const pool = keyPool();
+  if (!pool.length) return null;
+  return pool[keyIndex % pool.length];
+}
+
+/** 현재 키가 할당량에 걸렸을 때 다음 키로 전환. 전환했으면 true. */
+export function rotateApiKey() {
+  const pool = keyPool();
+  if (pool.length < 2) return false;
+  keyIndex = (keyIndex + 1) % pool.length;
+  console.warn(`[gemini] 할당량 초과 — 키 ${((keyIndex - 1 + pool.length) % pool.length) + 1}/${pool.length} → ${keyIndex + 1}/${pool.length} 전환`);
+  return true;
 }
 
 export async function listModels() {
@@ -109,6 +132,8 @@ export async function generateJsonWithRetry(opts, { attempts = 4, baseDelay = 20
       return await generateJson(opts);
     } catch (e) {
       last = e;
+      // 429 는 키 풀이 있으면 다음 키로 넘어가서 즉시 재시도한다
+      if (e.status === 429 && rotateApiKey()) continue;
       const transient = e.status === 503 || e.status === 429 || e.status >= 500;
       if (!transient || i === attempts - 1) throw e;
       await sleep(baseDelay * 2 ** i);

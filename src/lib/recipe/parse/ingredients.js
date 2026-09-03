@@ -8,7 +8,7 @@ import { detectMeasureBasis, applyMeasureBasis } from './measure-basis.js';
 
 const UNIT_WORDS = [
   'kg', 'KG', 'g', 'G', 'mL', 'ml', 'ML', 'L', 'l', 'cc', 'CC',
-  '큰술', '작은술', '찻숟가락', '숟가락', '숟갈', '스푼', '컵', '종이컵', '소주잔', '국자',
+  '큰술', '큰스푼', '작은술', '찻숟가락', '티스푼', '밥숟가락', '숟가락', '숟갈', '스푼', '컵', '종이컵', '소주잔', '국자',
   '개', '알', '장', '대', '쪽', '모', '줌', '봉지', '봉', '포기', '통', '마리', '조각',
   '밥그릇', '공기', '번', '근', '뿌리', '단', '인분', '꼬집', '팩', '캔', '병', '자루', '토막', '주먹',
   'T', 't', 'Ts',
@@ -156,6 +156,15 @@ export function parseSegment(seg, section) {
     }
   }
 
+  // "준비 (2~3인분 기준)", "레시피는 2인분" — 인분은 분량 표기지 재료가 아니다.
+  // 인분 수 자체는 detectServings 가 원문에서 따로 읽는다.
+  if (unit === '인분') return null;
+
+  // '번'은 계량 단위가 아니라 횟수다 ("한 번 만들어 먹는 순간", "두 번 헹구기").
+  // 위 복구가 진짜 단위("밥그릇 1번")를 찾아냈다면 unit 이 바뀌었을 것이고,
+  // 여전히 '번'이면 서술 문장 조각이므로 재료로 잡지 않는다.
+  if (unit === '번') return null;
+
   const item = {
     raw: seg.trim(),
     section,
@@ -207,6 +216,34 @@ function tryLabeledInline(s) {
   return null;
 }
 
+// "소금, 후추 2꼬집" — 마지막에 붙은 계량 하나가 앞의 이름들에 공유되는 표기.
+// 꼬집·약간류(조미료 나열 관용구)와 명시적 '씩' 표기에만 적용한다.
+// "돼지고기, 양파 1개" 같은 셈 단위는 마지막 재료만의 수량일 가능성이 높아 건드리지 않는다.
+function distributeSharedQty(items) {
+  for (let i = items.length - 1; i > 0; i--) {
+    const src = items[i];
+    if (!src.unit) continue;
+    // 약간·적당량은 수량 없이도 나눠 갖는다 ("소금 · 후추 약간")
+    const vagueOnly = src.qty == null && VAGUE_UNITS.has(src.unit);
+    if (src.qty == null && !vagueOnly) continue;
+    const shareable = vagueOnly || src.unit === '꼬집' || VAGUE_UNITS.has(src.unit) || /씩/.test(src.raw);
+    if (!shareable) continue;
+    // 바로 앞에서부터, 수량이 전혀 없는 이름-뿐인 항목들에만 거슬러 배분한다
+    for (let j = i - 1; j >= 0 && items[j].qty == null && !items[j].unit && !items[j].amount; j--) {
+      const t = items[j];
+      t.qty = src.qty;
+      t.unit = src.unit;
+      const conv = toBaseAmount(t.qty, t.unit, t.name);
+      t.amount = conv.convertible
+        ? { value: Math.round(conv.amount * 100) / 100, base: conv.base, basis: conv.basis }
+        : null;
+      t.amountIssue = conv.convertible ? null : { reason: conv.reason, detail: conv.detail };
+      if (conv.convertible) t.confidence = 'high';
+    }
+  }
+  return items;
+}
+
 function parseLine(line, section) {
   const segs = splitTopLevel(line);
   const out = [];
@@ -214,7 +251,7 @@ function parseLine(line, section) {
     const it = parseSegment(seg, section);
     if (it) out.push(it);
   }
-  return out;
+  return distributeSharedQty(out);
 }
 
 export function extractIngredients(text, { source = 'unknown' } = {}) {
