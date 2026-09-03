@@ -1,11 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import { pantryRecommendedChips } from "@/lib/data/recibi/ingredients";
 import { searchPantryRecipes } from "@/lib/services/recibi/pantry-service";
-import { pantryMatchToAnalysisData } from "@/lib/data/recibi/pantry-to-analysis";
-import { setCurrentAnalysis } from "@/lib/current-analysis";
 import { formatWon } from "@/lib/calc";
 import { Chip, ChipAddInput } from "@/components/recibi/ui/Chip/Chip";
 import { Button } from "@/components/recibi/ui/Button/Button";
@@ -22,7 +19,6 @@ const PANTRY_LIMIT = 5;
 
 // p1 시작 · p2 결과 · p3 결과 없음 · p4 5개 가득 — 전부 이 화면의 상태다 (02_동작규칙 7항, SUB)
 export default function PantryPage() {
-  const router = useRouter();
   const [chosen, setChosen] = useState<ChosenPantryIngredient[]>([]);
   const [results, setResults] = useState<PantryMatch[] | null>(null); // null = 아직 안 찾음(p1)
   const [isSearching, setIsSearching] = useState(false);
@@ -145,10 +141,8 @@ export default function PantryPage() {
                     </div>
                   </span>
                 }
-                onOpen={() => {
-                  setCurrentAnalysis(pantryMatchToAnalysisData(match));
-                  router.push("/result");
-                }}
+                // LLM 추천 메뉴는 저장된 레시피가 아니라 r1(결과 화면)이 성립하지 않는다.
+                // onOpen 을 주지 않으면 ListRow 가 버튼을 비활성화한다 — 목록에서 종결.
               />
             ))}
           </ul>

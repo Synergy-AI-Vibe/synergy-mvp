@@ -15,6 +15,10 @@ import { extractIngredients } from '../parse/ingredients.js';
 
 const MIN_ITEMS = 3;
 
+// 기획 3.1 — 블로그 URL 입력과 유튜브 내부의 블로그 링크 추적을 모두 제외
+// (약관 검토 전까지 비활성. 경로는 살려 두고 플래그로만 끈다)
+const ENABLE_BLOG = false;
+
 // 공식 Data API 키가 있으면 그쪽을 쓰고, 없으면 스크래핑으로 떨어진다.
 // 가져오는 내용(설명란·고정 댓글 텍스트)은 양쪽이 동일하므로 이 아래 파이프라인은
 // 어느 경로로 왔는지 신경 쓰지 않는다.
@@ -47,6 +51,20 @@ export async function resolveRecipe(input) {
   const trail = [];
 
   if (!parseVideoId(input)) {
+    if (!ENABLE_BLOG) {
+      // 블로그가 유일한 경로이므로 skipped 를 남기고 실패 처리한다
+      trail.push(step('blog', '블로그 본문', 'skipped', '기획 3.1 — 블로그 입력 비활성'));
+      return {
+        ok: false,
+        source: 'blog',
+        reason: 'BLOG_DISABLED',
+        message: '블로그 주소는 지원하지 않아요. 유튜브 링크를 넣거나 재료를 직접 입력해 주세요.',
+        text: '',
+        extraction: extractIngredients('', { source: 'blog' }),
+        trail,
+        resolvedFrom: null,
+      };
+    }
     const blog = await fetchBlog(input);
     const ex = extractIngredients(blog.text || '', { source: 'blog' });
     trail.push(
@@ -113,7 +131,10 @@ export async function resolveRecipe(input) {
 
   // --- 3단계: 설명란·고정 댓글에 걸린 블로그 링크 ---
   const links = [...findRecipeLinks(yt.text || ''), ...findRecipeLinks(pinnedText)];
-  for (const link of links.slice(0, 2)) {
+  if (!ENABLE_BLOG && links.length) {
+    trail.push(step('linked-blog', '연결된 블로그', 'skipped', `기획 3.1 — 블로그 추적 비활성 (링크 ${links.length}개 무시)`));
+  }
+  for (const link of ENABLE_BLOG ? links.slice(0, 2) : []) {
     try {
       const blog = await fetchBlog(link);
       const ex = extractIngredients(blog.text || '', { source: 'linked-blog' });
