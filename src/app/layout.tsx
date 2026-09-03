@@ -6,6 +6,7 @@ import { Toast } from "@/components/recibi/ui/Toast/Toast";
 import { ToastFromQuery } from "@/components/recibi/ToastFromQuery";
 import { Header } from "@/components/recibi/layout/Header";
 import { Footer } from "@/components/recibi/layout/Footer";
+import { SurveyButton } from "@/components/recibi/layout/SurveyButton";
 import { LoginModal } from "@/components/recibi/auth/LoginModal";
 import { WithdrawModal } from "@/components/recibi/auth/WithdrawModal";
 import { createClient } from "@/lib/supabase/server";
@@ -53,6 +54,7 @@ export default async function RootLayout({ children }: LayoutProps<"/">) {
             <LoginModal />
           </Suspense>
           <WithdrawModal />
+          <SurveyButton />
           <Toast />
         </RecibiAppProvider>
       </body>
